@@ -1,86 +1,1063 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معلومات الشراء</title>
+    <title>فندر - Vendor</title>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNdyY6TkU2aiblwWFG2zppasgqeBzhqyA",
+            authDomain: "instashow-1f57f.firebaseapp.com",
+            databaseURL: "https://instashow-1f57f-default-rtdb.firebaseio.com",
+            projectId: "instashow-1f57f",
+            storageBucket: "instashow-1f57f.firebasestorage.app",
+            messagingSenderId: "265624874131",
+            appId: "1:265624874131:web:64ab43a0783e1212a73166",
+            measurementId: "G-D1BWXQX5VT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        window.firebaseApp = { app, auth, db, ref, set, get, update, onValue, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut };
+    </script>
     <style>
-        body {
-            font-family: 'Cairo', sans-serif;
-            background-color: #f7f7f7;
-            color: #333;
-            direction: rtl;
-            text-align: center;
+        :root {
+            --bg: #080c14;
+            --surface: #111827;
+            --surface2: #1a2236;
+            --surface3: #1f2a3f;
+            --gold: #f0b90b;
+            --gold2: #d4a017;
+            --accent: #3b82f6;
+            --accent2: #60a5fa;
+            --danger: #ef4444;
+            --danger2: #f87171;
+            --success: #10b981;
+            --text: #f1f5f9;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --radius: 20px;
+            --radius-sm: 12px;
+            --radius-xs: 8px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55);
+            --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            --font: 'Segoe UI', 'Tajawal', 'Cairo', system-ui, sans-serif;
+        }
+
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image:
+                radial-gradient(ellipse at 15% 5%, rgba(240, 185, 11, 0.04) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 90%, rgba(59, 130, 246, 0.04) 0%, transparent 55%);
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--gold);
+            border-radius: 10px;
+        }
+
+        #authScreen {
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: var(--bg);
+        }
+        #authScreen.hidden {
+            display: none;
+        }
+        .auth-container {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 38px 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            position: relative;
+            overflow: hidden;
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-logo .logo-icon {
+            font-size: 52px;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .auth-logo h1 {
+            font-size: 30px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .auth-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 26px;
+            background: var(--surface2);
+            border-radius: 35px;
+            padding: 5px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: var(--transition);
+            color: var(--text2);
+            border: none;
+            background: transparent;
+        }
+        .auth-tab.active {
+            background: var(--gold);
+            color: #1a1a1a;
+            box-shadow: 0 4px 20px rgba(240, 185, 11, 0.4);
+        }
+        .auth-form {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            z-index: 1;
+        }
+        .auth-form.active {
+            display: flex;
+        }
+        .input-group {
+            position: relative;
+        }
+        .input-group .icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.5;
+        }
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 13px 44px 13px 16px;
+            background: var(--surface2);
+            border: 1.5px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-xs);
+            color: var(--text);
+            font-size: 14px;
+            font-family: var(--font);
+            transition: var(--transition);
+            outline: none;
+        }
+        .btn {
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            font-family: var(--font);
+            letter-spacing: 0.5px;
+            text-align: center;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+        .btn-gold {
+            background: linear-gradient(135deg, var(--gold), var(--gold2));
+            color: #1a1a1a;
+            box-shadow: 0 6px 24px rgba(240, 185, 11, 0.3);
+        }
+        .btn-gold:hover {
+            transform: translateY(-3px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--gold);
+            color: var(--gold);
+        }
+        .btn-danger {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-sm {
+            padding: 10px 18px;
+            font-size: 13px;
+            border-radius: 24px;
+            width: auto;
+        }
+        .link-text {
+            text-align: center;
+            color: var(--accent2);
+            cursor: pointer;
+            font-size: 13px;
+            background: none;
+            border: none;
+            font-family: var(--font);
+        }
+        .error-msg,
+        .success-msg {
+            padding: 11px 14px;
+            border-radius: var(--radius-xs);
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+        .error-msg {
+            background: rgba(239, 68, 68, 0.12);
+            color: #fca5a5;
+        }
+        .success-msg {
+            background: rgba(16, 185, 129, 0.12);
+            color: #6ee7b7;
+        }
+
+        #appScreen {
+            display: none;
             min-height: 100vh;
         }
-        .container {
-            max-width: 700px;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        #appScreen.active {
+            display: block;
         }
-        .title {
-            font-size: 36px;
-            margin-bottom: 30px;
-            color: #ff5722;
-            font-weight: bold;
+        .top-nav {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(20px);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .info {
-            margin-bottom: 30px;
-            font-size: 26px;
-            font-weight: bold;
-            color: #333;
+        .top-nav .brand {
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--gold), #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        .info span {
-            color: #ff5722;
-        }
-        .footer-image {
-            width: 200px;
-            margin-top: 40px;
-        }
-        .footer-image img {
-            width: 120%;
-            height: auto;
-        }
-         .back-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 24px;
-            font-size: 18px;
-            font-family: 'Cairo', sans-serif;
+        .menu-toggle {
+            background: var(--surface2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text);
+            font-size: 22px;
             cursor: pointer;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: background-color 0.3s;
+            padding: 10px 12px;
+            border-radius: var(--radius-xs);
         }
-        .back-button:hover {
-            background-color: #0056b3;
+
+        .sidebar-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            display: none;
+            backdrop-filter: blur(3px);
+        }
+        .sidebar-overlay.open {
+            display: block;
+        }
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 285px;
+            height: 100vh;
+            background: var(--surface);
+            z-index: 201;
+            transition: var(--transition);
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            overflow-y: auto;
+        }
+        .sidebar.open {
+            right: 0;
+        }
+        .side-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+        .side-menu li {
+            padding: 13px 16px;
+            border-radius: var(--radius-xs);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            font-size: 14px;
+            color: var(--text2);
+        }
+        .side-menu li:hover,
+        .side-menu li.active {
+            background: var(--surface2);
+            color: var(--gold);
+        }
+        .side-menu .logout-item {
+            margin-top: auto;
+            color: var(--danger2) !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 18px;
+        }
+
+        .main-content {
+            padding: 20px 16px;
+            max-width: 600px;
+            margin: 0 auto;
+            padding-bottom: 40px;
+        }
+        .page-section {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 22px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+        }
+        .card-header {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .stat-card {
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 18px 14px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .stat-card .stat-num {
+            font-size: 30px;
+            font-weight: 800;
+            color: var(--gold);
+        }
+
+        .shein-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1f1f2e, #2a2a3c);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 16px 10px 12px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            margin-bottom: 18px;
+        }
+        .shein-btn:hover {
+            border-color: var(--gold);
+            transform: translateY(-3px);
+        }
+        .shein-img {
+            width: 130px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .shein-text {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 13px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-review {
+            background: rgba(251, 191, 36, 0.18);
+            color: #fbbf24;
+        }
+        .badge-payment {
+            background: rgba(59, 130, 246, 0.18);
+            color: #60a5fa;
+        }
+        .badge-audit {
+            background: rgba(139, 92, 246, 0.18);
+            color: #a78bfa;
+        }
+        .badge-process {
+            background: rgba(6, 182, 212, 0.18);
+            color: #22d3ee;
+        }
+        .badge-shipping {
+            background: rgba(249, 115, 22, 0.18);
+            color: #fb923c;
+        }
+        .badge-delivered {
+            background: rgba(16, 185, 129, 0.18);
+            color: #34d399;
+        }
+        .badge-cancelled {
+            background: rgba(239, 68, 68, 0.18);
+            color: #f87171;
+        }
+
+        .order-card {
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .order-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 24px 20px;
+            width: 100%;
+            max-width: 530px;
+            max-height: 88vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .modal .close-modal {
+            float: left;
+            background: var(--surface2);
+            border: none;
+            color: var(--text2);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: var(--radius-xs);
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 11px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 14px;
+        }
+        .detail-row .dl {
+            color: var(--text3);
+            min-width: 90px;
+        }
+        .detail-row .dv {
+            color: var(--text);
+            font-weight: 600;
+        }
+        .highlight-box {
+            background: var(--surface2);
+            border: 1px dashed rgba(240, 185, 11, 0.2);
+            border-radius: var(--radius-xs);
+            padding: 14px;
+            margin: 12px 0;
+            line-height: 1.8;
+            font-size: 13px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: #fff;
+            padding: 13px 26px;
+            border-radius: 30px;
+            z-index: 999;
+            font-size: 14px;
+            font-weight: 700;
+            animation: slideUp 0.35s ease;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(25px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="title">معلومات الشراء</div>
-        <div class="info"><span>سعر الصرف:</span> 1380</div>
-        <div class="info"><span>الشحن:</span> مجاني</div>
-        <div class="info"><span>توصيل محافظة ذي قار:</span> 2,500 </div>
-        <div class="info"><span> توصيل جميع المحافظات:</span> 4,000 </div>
-        <div class="info"><span>مدة الشحن:</span> 15-20 يوماً</div>
-        <div class="footer-image">
-            <img src="https://cdn-icons-png.flaticon.com/256/9473/9473009.png" alt="رمز التسوق">
+    <div id="authScreen">
+        <div class="auth-container">
+            <div class="auth-logo"><span class="logo-icon">💎</span><h1>فندر</h1><span>Vendor</span></div>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">تسجيل الدخول</button>
+                <button class="auth-tab" data-tab="signup">إنشاء حساب</button>
+            </div>
+            <div id="authError" class="error-msg"></div>
+            <div id="authSuccess" class="success-msg"></div>
+            <form id="loginForm" class="auth-form active" autocomplete="off">
+                <h3>👋 مرحباً بعودتك</h3>
+                <div class="input-group"><span class="icon">📧</span><input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required></div>
+                <div class="input-group"><span class="icon">🔒</span><input type="password" id="loginPass" placeholder="كلمة المرور" required></div>
+                <button type="submit" class="btn btn-gold">تسجيل الدخول</button>
+                <button type="button" class="link-text" id="showForgot">نسيت كلمة المرور؟</button>
+            </form>
+            <form id="signupForm" class="auth-form" autocomplete="off">
+                <h3>📝 إنشاء حساب جديد</h3>
+                <div class="input-group"><span class="icon">👤</span><input type="text" id="signName" placeholder="الاسم الكامل" required></div>
+                <div class="input-group"><span class="icon">📞</span><input type="tel" id="signPhone1" placeholder="رقم الهاتف الأول" required></div>
+                <div class="input-group"><span class="icon">📞</span><input type="tel" id="signPhone2" placeholder="رقم الهاتف الثاني"></div>
+                <div class="input-group"><span class="icon">📍</span><select id="signProvince" required><option value="">اختر المحافظة</option><option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option><option>النجف</option><option>كربلاء</option><option>دهوك</option><option>السليمانية</option><option>كركوك</option><option>ديالى</option><option>واسط</option><option>بابل</option><option>الأنبار</option><option>صلاح الدين</option><option>القادسية</option><option>ميسان</option><option>ذي قار</option><option>المثنى</option></select></div>
+                <div class="input-group"><span class="icon">🏠</span><input type="text" id="signAddress" placeholder="العنوان الكامل" required></div>
+                <div class="input-group"><span class="icon">📧</span><input type="email" id="signEmail" placeholder="البريد الإلكتروني" required></div>
+                <div class="input-group"><span class="icon">🔒</span><input type="password" id="signPass" placeholder="كلمة المرور (6 أحرف على الأقل)" required minlength="6"></div>
+                <button type="submit" class="btn btn-gold">إنشاء حساب</button>
+            </form>
+            <form id="forgotForm" class="auth-form" autocomplete="off">
+                <h3>🔑 استعادة كلمة المرور</h3>
+                <div class="input-group"><span class="icon">📧</span><input type="email" id="forgotEmail" placeholder="البريد الإلكتروني" required></div>
+                <button type="submit" class="btn btn-gold">إرسال الرابط</button>
+                <button type="button" class="link-text" id="backToLogin">العودة لتسجيل الدخول</button>
+            </form>
         </div>
     </div>
-    <button class="back-button" onclick="window.location.href='index.html';">عودة</button>
+
+    <div id="appScreen">
+        <nav class="top-nav"><button class="menu-toggle" id="menuToggle">☰</button><span class="brand">💎 فندر</span><span style="width:42px;"></span></nav>
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="side-header"><span>القائمة</span><button class="close-side" id="closeSide">✕</button></div>
+            <ul class="side-menu">
+                <li class="active" data-page="dashboard">📊 الرئيسية</li>
+                <li data-page="accountInfo">👤 معلومات الحساب</li>
+                <li data-page="trackOrders">📦 تتبع الطلبات</li>
+                <li data-page="support">💬 الدعم الفني</li>
+                <li class="logout-item" id="logoutBtn">🚪 تسجيل الخروج</li>
+            </ul>
+        </aside>
+        <div class="main-content">
+            <section class="page-section active" id="pageDashboard">
+                <div class="card"><div class="card-header">📊 الإحصائيات</div><div class="stats-grid"><div class="stat-card"><div class="stat-num" id="statTotal">0</div></div><div class="stat-card"><div class="stat-num" id="statPending">0</div></div><div class="stat-card"><div class="stat-num" id="statShipping">0</div></div><div class="stat-card"><div class="stat-num" id="statDelivered">0</div></div></div></div>
+                <a href="https://www.shein.com/?url_from=GM74759765110" target="_blank" class="shein-btn"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSKihbaXUsglx49GK7vU0RrHkJdxfxerpY3xyVSXo2q0NvcpAiZJ8vteJ4&s=10" class="shein-img"><span class="shein-text">🛍️ تسوق الآن من شي إن</span></a>
+                <button class="btn btn-gold" style="margin-bottom:18px;" id="addOrderBtn">➕ إضافة طلب جديد</button>
+                <div class="card"><div class="card-header">🕒 آخر الطلبات</div><div id="recentOrdersContainer"></div></div>
+            </section>
+            <section class="page-section" id="pageAccountInfo"><div class="card"><div class="card-header">👤 معلومات الحساب</div><div id="accountDetails"></div></div></section>
+            <section class="page-section" id="pageTrackOrders"><div class="card"><div class="card-header">📦 تتبع الطلبات</div><div id="ordersList"></div></div></section>
+            <section class="page-section" id="pageSupport"><div class="card"><div class="card-header">💬 الدعم الفني</div><div class="support-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;"><a href="https://www.instagram.com/vndr1q?igsh=MXR0cHNsY3VheTRkZw==" target="_blank" style="background:var(--surface2); padding:20px; border-radius:12px; text-align:center; color:var(--text); text-decoration:none;">📷 Instagram</a><a href="https://wa.me/message/LPX3FF4TG4XWK1" target="_blank" style="background:var(--surface2); padding:20px; border-radius:12px; text-align:center; color:var(--text); text-decoration:none;">💬 WhatsApp</a></div></div></section>
+        </div>
+    </div>
+
+    <div id="addOrderModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeAddOrder">✕</button><h3>➕ إضافة طلب جديد</h3><form id="addOrderForm"><div class="input-group"><label>🔗 رابط السلة</label><input type="url" id="cartLink" required></div><div class="radio-group" id="dupRadioGroup" style="display:flex; gap:10px; margin:12px 0;"><label class="radio-option selected" data-val="no" style="flex:1; padding:12px; background:var(--surface2); border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="hasDuplicates" value="no" checked> ❌ لا مكرر</label><label class="radio-option" data-val="yes" style="flex:1; padding:12px; background:var(--surface2); border-radius:8px; text-align:center; cursor:pointer;"><input type="radio" name="hasDuplicates" value="yes"> ✅ يوجد مكرر</label></div><div id="duplicateProductsContainer" style="display:none;"><div id="dupFields"></div><button type="button" class="btn btn-outline btn-sm" id="addDupRow">➕ إضافة منتج آخر</button></div><button type="submit" class="btn btn-gold" style="margin-top:12px;">📩 إتمام الطلب</button></form></div></div>
+    <div id="orderDetailModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeOrderDetail">✕</button><h3>📋 تفاصيل الطلب</h3><div id="orderDetailContent"></div></div></div>
+    <div id="paymentModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closePayment">✕</button><h3>💳 إتمام الدفع</h3><div id="paymentDetails"></div><div class="radio-group" id="payMethodGroup" style="display:flex; gap:10px; margin:12px 0;"><label class="radio-option" data-val="zaincash" style="flex:1;">📱 زين كاش</label><label class="radio-option" data-val="rafidain" style="flex:1;">🏦 الرافدين</label></div><div id="payInstructions" style="display:none;"></div><div id="fileUploadSection" style="display:none;"><label class="file-upload-area" id="fileUploadArea"><span>📸 اضغط لرفع صورة التحويل</span><input type="file" id="paymentScreenshot" accept="image/*"></label><img id="previewImage" style="display:none; max-width:100%; max-height:200px; margin-top:8px;"></div><button class="btn btn-gold" id="confirmPaymentBtn" disabled>✅ دفع العربون وإتمام الطلب</button></div></div>
+    <div id="toastContainer"></div>
+
+    <script type="module">
+        const { auth, db, ref, set, get, update, onValue, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } = window.firebaseApp;
+
+        let currentUser = null;
+        let currentUserData = null;
+        let currentPaymentOrderId = null;
+        let uploadedImageUrl = null;
+        let allOrders = [];
+
+        function floorToThousand(amount) {
+            if (!amount || isNaN(amount)) return 0;
+            return Math.floor(amount / 1000) * 1000;
+        }
+        function formatIQD(amount) {
+            if (amount == null) return '—';
+            return floorToThousand(amount).toLocaleString() + ' د.ع';
+        }
+        function showToast(msg, type = '') {
+            const t = document.createElement('div');
+            t.className = 'toast ' + type;
+            t.textContent = msg;
+            document.getElementById('toastContainer').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+        function getBadgeClass(status) {
+            const map = { 'قيد المراجعة':'badge-review', 'بانتظار الدفع':'badge-payment', 'قيد التدقيق':'badge-audit', 'قيد التجهيز':'badge-process', 'قيد الشحن للكويت':'badge-shipping', 'قيد الشحن للعراق':'badge-shipping', 'تم التسليم':'badge-delivered', 'ملغي':'badge-cancelled', 'ملغي لان عملية تحويل الاموال غير صالحة':'badge-cancelled' };
+            return map[status] || 'badge-review';
+        }
+        function formatDate(iso) { return iso ? new Date(iso).toLocaleDateString('ar-IQ', { year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '—'; }
+
+        // Auth UI
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+                document.getElementById(tab.dataset.tab === 'login' ? 'loginForm' : 'signupForm').classList.add('active');
+                document.getElementById('authError').style.display = 'none';
+                document.getElementById('authSuccess').style.display = 'none';
+            });
+        });
+        document.getElementById('showForgot').addEventListener('click', () => {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('forgotForm').classList.add('active');
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        });
+        document.getElementById('backToLogin').addEventListener('click', () => {
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById('loginForm').classList.add('active');
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-tab="login"]').classList.add('active');
+        });
+
+        // Signup
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('signName').value.trim();
+            const phone1 = document.getElementById('signPhone1').value.trim();
+            const phone2 = document.getElementById('signPhone2').value.trim();
+            const province = document.getElementById('signProvince').value;
+            const address = document.getElementById('signAddress').value.trim();
+            const email = document.getElementById('signEmail').value.trim();
+            const pass = document.getElementById('signPass').value;
+            if (!name || !phone1 || !province || !address || !email || !pass) {
+                document.getElementById('authError').textContent = 'املأ جميع الحقول';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+            if (pass.length < 6) {
+                document.getElementById('authError').textContent = 'كلمة المرور 6 أحرف على الأقل';
+                document.getElementById('authError').style.display = 'block';
+                return;
+            }
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                await set(ref(db, 'users/' + userCred.user.uid), { name, phone1, phone2: phone2 || '', province, address, email, createdAt: new Date().toISOString() });
+                document.getElementById('authSuccess').textContent = '✅ تم إنشاء الحساب';
+                document.getElementById('authSuccess').style.display = 'block';
+                document.getElementById('signupForm').reset();
+                setTimeout(() => {
+                    document.getElementById('loginForm').classList.add('active');
+                    document.getElementById('signupForm').classList.remove('active');
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelector('[data-tab="login"]').classList.add('active');
+                }, 1500);
+            } catch (err) {
+                document.getElementById('authError').textContent = '⚠️ ' + err.message;
+                document.getElementById('authError').style.display = 'block';
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                document.getElementById('authError').textContent = '⚠️ ' + err.message;
+                document.getElementById('authError').style.display = 'block';
+            }
+        });
+
+        // Forgot
+        document.getElementById('forgotForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value.trim();
+            try {
+                await sendPasswordResetEmail(auth, email);
+                document.getElementById('authSuccess').textContent = '✅ تم إرسال رابط الاستعادة';
+                document.getElementById('authSuccess').style.display = 'block';
+            } catch (err) {
+                document.getElementById('authError').textContent = '⚠️ ' + err.message;
+                document.getElementById('authError').style.display = 'block';
+            }
+        });
+
+        // Auth state
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const snap = await get(ref(db, 'users/' + user.uid));
+                if (snap.exists()) currentUserData = snap.val();
+                localStorage.setItem('vndr_session', '1');
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.add('active');
+                updateSidebar();
+                loadOrders();
+                navigateTo('dashboard');
+            } else {
+                if (!localStorage.getItem('vndr_session')) {
+                    document.getElementById('authScreen').classList.remove('hidden');
+                    document.getElementById('appScreen').classList.remove('active');
+                }
+            }
+        });
+
+        function updateSidebar() {
+            if (!currentUserData) return;
+            document.getElementById('accountDetails').innerHTML = `
+                <div class="detail-row"><span class="dl">الاسم</span><span class="dv">${currentUserData.name||'-'}</span></div>
+                <div class="detail-row"><span class="dl">البريد</span><span class="dv">${currentUserData.email||'-'}</span></div>
+                <div class="detail-row"><span class="dl">الهاتف 1</span><span class="dv">${currentUserData.phone1||'-'}</span></div>
+                <div class="detail-row"><span class="dl">الهاتف 2</span><span class="dv">${currentUserData.phone2||'-'}</span></div>
+                <div class="detail-row"><span class="dl">المحافظة</span><span class="dv">${currentUserData.province||'-'}</span></div>
+                <div class="detail-row"><span class="dl">العنوان</span><span class="dv">${currentUserData.address||'-'}</span></div>
+            `;
+        }
+
+        // Sidebar
+        document.getElementById('menuToggle').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.add('open');
+            document.getElementById('sidebarOverlay').classList.add('open');
+        });
+        document.getElementById('closeSide').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+        });
+        document.getElementById('sidebarOverlay').addEventListener('click', () => {
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+        });
+        document.querySelectorAll('.side-menu li[data-page]').forEach(li => {
+            li.addEventListener('click', () => {
+                navigateTo(li.dataset.page);
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('open');
+            });
+        });
+
+        function navigateTo(page) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById('page' + page.charAt(0).toUpperCase() + page.slice(1)).classList.add('active');
+            document.querySelectorAll('.side-menu li').forEach(l => l.classList.remove('active'));
+            document.querySelector(`[data-page="${page}"]`).classList.add('active');
+            if (page === 'trackOrders') renderOrdersList();
+            if (page === 'dashboard') { updateStats(); renderRecentOrders(); }
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            localStorage.removeItem('vndr_session');
+            document.getElementById('authScreen').classList.remove('hidden');
+            document.getElementById('appScreen').classList.remove('active');
+        });
+
+        // Load orders
+        function loadOrders() {
+            onValue(ref(db, 'orders'), (snap) => {
+                allOrders = [];
+                if (snap.exists()) {
+                    const data = snap.val();
+                    for (const [key, val] of Object.entries(data)) {
+                        if (val.userId === currentUser.uid) allOrders.push({ id: key, ...val });
+                    }
+                    allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                }
+                renderOrdersList();
+                renderRecentOrders();
+                updateStats();
+            });
+        }
+
+        function renderOrdersList() {
+            const container = document.getElementById('ordersList');
+            if (!container) return;
+            if (!allOrders.length) { container.innerHTML = '<div style="text-align:center;color:var(--text3);padding:20px;">لا توجد طلبات</div>'; return; }
+            let html = '';
+            allOrders.forEach(order => {
+                const badge = getBadgeClass(order.status);
+                html += `
+                <div class="order-card" data-id="${order.id}">
+                    <div style="display:flex;justify-content:space-between;">
+                        <strong>${order.orderNumber||order.id}</strong>
+                        <span class="badge ${badge}">${order.status||'قيد المراجعة'}</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--text3);">${formatDate(order.createdAt)}</div>
+                    ${order.totalIQD ? `<div style="margin-top:4px;">💰 ${formatIQD(order.totalIQD)}</div>` : ''}
+                    ${order.status === 'بانتظار الدفع' ? `<div style="margin-top:8px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm pay-btn" data-id="${order.id}">💳 ادفع</button><button class="btn btn-danger btn-sm cancel-btn" data-id="${order.id}">❌ إلغاء</button></div>` : ''}
+                </div>`;
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.order-card').forEach(card => card.addEventListener('click', (e) => {
+                if (e.target.closest('button')) return;
+                openOrderDetail(card.dataset.id);
+            }));
+            container.querySelectorAll('.pay-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); openPaymentModal(b.dataset.id); }));
+            container.querySelectorAll('.cancel-btn').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); cancelOrder(b.dataset.id); }));
+        }
+
+        function renderRecentOrders() {
+            const container = document.getElementById('recentOrdersContainer');
+            if (!container) return;
+            const recent = allOrders.slice(0, 5);
+            if (!recent.length) { container.innerHTML = '<div style="text-align:center;color:var(--text3);">لا توجد طلبات</div>'; return; }
+            container.innerHTML = recent.map(order => `
+                <div class="order-card" data-id="${order.id}" style="margin-bottom:6px; padding:12px;">
+                    <div style="display:flex;justify-content:space-between;">
+                        <span>${order.orderNumber||order.id}</span>
+                        <span class="badge ${getBadgeClass(order.status)}">${order.status}</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--text3);">${formatDate(order.createdAt)}</div>
+                </div>
+            `).join('');
+            container.querySelectorAll('.order-card').forEach(card => card.addEventListener('click', () => openOrderDetail(card.dataset.id)));
+        }
+
+        function updateStats() {
+            document.getElementById('statTotal').textContent = allOrders.length;
+            document.getElementById('statPending').textContent = allOrders.filter(o => o.status === 'قيد المراجعة').length;
+            document.getElementById('statShipping').textContent = allOrders.filter(o => o.status.includes('شحن')).length;
+            document.getElementById('statDelivered').textContent = allOrders.filter(o => o.status === 'تم التسليم').length;
+        }
+
+        function openOrderDetail(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            const badgeClass = getBadgeClass(order.status);
+            const totalIQD = order.totalIQD || 0;
+            const downPayment = order.downPayment || 0;
+            let remaining = null;
+            if (order.status === 'قيد التجهيز' && totalIQD && downPayment) {
+                remaining = floorToThousand(totalIQD - downPayment);
+            } else if (order.remainingAmount != null) {
+                remaining = floorToThousand(order.remainingAmount);
+            }
+
+            let dupHtml = '';
+            if (order.hasDuplicates && order.duplicateProducts?.length) {
+                dupHtml = '<div class="highlight-box"><strong>📋 منتجات مكررة:</strong><br>';
+                order.duplicateProducts.forEach((dp, i) => dupHtml += `${i+1}. <a href="${dp.link}" target="_blank">${dp.link}</a> (العدد: ${dp.quantity})<br>`);
+                dupHtml += '</div>';
+            }
+
+            document.getElementById('orderDetailContent').innerHTML = `
+                <div class="detail-row"><span class="dl">🔖 رقم الطلب</span><span class="dv">${order.orderNumber||order.id}</span></div>
+                <div class="detail-row"><span class="dl">📊 الحالة</span><span class="dv"><span class="badge ${badgeClass}">${order.status||'—'}</span></span></div>
+                <div class="detail-row"><span class="dl">📅 التاريخ</span><span class="dv">${formatDate(order.createdAt)}</span></div>
+                <div class="detail-row"><span class="dl">🔗 رابط السلة</span><span class="dv"><a href="${order.cartLink}" target="_blank">${order.cartLink||'—'}</a></span></div>
+                ${dupHtml}
+                <div class="detail-row"><span class="dl">💵 سعر $</span><span class="dv">${order.priceUSD||'—'}</span></div>
+                <div class="detail-row"><span class="dl">💵 سعر د.ع</span><span class="dv">${formatIQD(order.priceIQD)}</span></div>
+                <div class="detail-row"><span class="dl">🚚 توصيل</span><span class="dv">${formatIQD(order.deliveryFee)}</span></div>
+                <div class="detail-row"><span class="dl">📊 الإجمالي</span><span class="dv" style="color:var(--gold);">${formatIQD(order.totalIQD)}</span></div>
+                <div class="detail-row"><span class="dl">🔐 العربون</span><span class="dv">${formatIQD(order.downPayment)}</span></div>
+                ${remaining != null ? `<div class="detail-row"><span class="dl">💸 المتبقي</span><span class="dv" style="color:var(--success);">${formatIQD(remaining)}</span></div>` : ''}
+                <div class="detail-row"><span class="dl">💳 الدفع</span><span class="dv">${order.paymentMethod==='zaincash'?'📱 زين كاش':order.paymentMethod==='rafidain'?'🏦 الرافدين':'—'}</span></div>
+                ${order.paymentScreenshot ? `<div style="margin-top:8px;"><strong>📸 صورة التحويل:</strong><br><img src="${order.paymentScreenshot}" style="max-width:100%;max-height:200px;margin-top:4px;"></div>` : ''}
+                ${order.status === 'بانتظار الدفع' ? `<div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm" id="detailPayBtn">💳 ادفع</button><button class="btn btn-danger btn-sm" id="detailCancelBtn">❌ إلغاء</button></div>` : ''}
+            `;
+            document.getElementById('orderDetailModal').style.display = 'flex';
+            document.getElementById('detailPayBtn')?.addEventListener('click', () => { document.getElementById('orderDetailModal').style.display = 'none'; openPaymentModal(orderId); });
+            document.getElementById('detailCancelBtn')?.addEventListener('click', () => { document.getElementById('orderDetailModal').style.display = 'none'; cancelOrder(orderId); });
+        }
+        document.getElementById('closeOrderDetail').addEventListener('click', () => document.getElementById('orderDetailModal').style.display = 'none');
+
+        async function cancelOrder(orderId) {
+            if (!confirm('إلغاء الطلب؟')) return;
+            await update(ref(db, 'orders/' + orderId), { status: 'ملغي' });
+            showToast('تم الإلغاء');
+        }
+
+        // Add order
+        document.getElementById('addOrderBtn').addEventListener('click', () => { document.getElementById('addOrderModal').style.display = 'flex'; resetAddForm(); });
+        document.getElementById('closeAddOrder').addEventListener('click', () => document.getElementById('addOrderModal').style.display = 'none');
+        function resetAddForm() {
+            document.getElementById('addOrderForm').reset();
+            document.getElementById('duplicateProductsContainer').style.display = 'none';
+            document.getElementById('dupFields').innerHTML = '<div style="display:flex;gap:8px;margin-bottom:8px;"><input type="url" placeholder="رابط المنتج" class="dup-link" style="flex:2;"><input type="number" placeholder="العدد" class="dup-qty" value="1" min="1" style="width:70px;"></div>';
+            document.querySelector('input[name="hasDuplicates"][value="no"]').checked = true;
+            document.querySelectorAll('#dupRadioGroup .radio-option').forEach(o => o.classList.remove('selected'));
+            document.querySelector('#dupRadioGroup .radio-option[data-val="no"]').classList.add('selected');
+        }
+        document.getElementById('dupRadioGroup').addEventListener('click', (e) => {
+            const opt = e.target.closest('.radio-option');
+            if (!opt) return;
+            document.querySelectorAll('#dupRadioGroup .radio-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            opt.querySelector('input').checked = true;
+            document.getElementById('duplicateProductsContainer').style.display = opt.dataset.val === 'yes' ? 'block' : 'none';
+        });
+        document.getElementById('addDupRow').addEventListener('click', () => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
+            row.innerHTML = '<input type="url" placeholder="رابط المنتج" class="dup-link" style="flex:2;"><input type="number" placeholder="العدد" class="dup-qty" value="1" min="1" style="width:70px;"><button type="button" class="btn btn-danger btn-sm remove-dup">🗑️</button>';
+            document.getElementById('dupFields').appendChild(row);
+            row.querySelector('.remove-dup').addEventListener('click', () => row.remove());
+        });
+        document.getElementById('addOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cartLink = document.getElementById('cartLink').value.trim();
+            if (!cartLink) { showToast('أدخل رابط السلة', 'error'); return; }
+            const hasDup = document.querySelector('input[name="hasDuplicates"]:checked')?.value === 'yes';
+            const dups = [];
+            if (hasDup) {
+                document.querySelectorAll('#dupFields .dup-row, #dupFields > div').forEach(row => {
+                    const link = row.querySelector('.dup-link')?.value.trim();
+                    const qty = parseInt(row.querySelector('.dup-qty')?.value) || 1;
+                    if (link) dups.push({ link, quantity: qty });
+                });
+            }
+            const orderNumber = 'VND-' + Math.random().toString(36).substr(2, 6).toUpperCase() + '-' + Date.now().toString(36).slice(-3).toUpperCase();
+            await set(ref(db, 'orders/' + orderNumber), {
+                orderNumber, userId: currentUser.uid, userEmail: currentUser.email, cartLink, hasDuplicates: hasDup, duplicateProducts: dups,
+                status: 'قيد المراجعة', createdAt: new Date().toISOString()
+            });
+            document.getElementById('addOrderModal').style.display = 'none';
+            resetAddForm();
+            showToast('✅ تم إرسال الطلب ' + orderNumber, 'success');
+        });
+
+        // Payment
+        function openPaymentModal(orderId) {
+            currentPaymentOrderId = orderId;
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) return;
+            document.getElementById('paymentDetails').innerHTML = `
+                <div class="highlight-box"><p><strong>🔖 ${order.orderNumber}</strong></p><p>💵 السعر: ${order.priceUSD||'—'} $</p><p>💰 الإجمالي: ${formatIQD(order.totalIQD)}</p><p>🔐 العربون: ${formatIQD(order.downPayment)}</p></div>`;
+            document.getElementById('paymentModal').style.display = 'flex';
+            resetPaymentForm();
+        }
+        function resetPaymentForm() {
+            document.querySelectorAll('#payMethodGroup .radio-option').forEach(o => o.classList.remove('selected'));
+            document.getElementById('payInstructions').style.display = 'none';
+            document.getElementById('fileUploadSection').style.display = 'none';
+            document.getElementById('previewImage').style.display = 'none';
+            document.getElementById('paymentScreenshot').value = '';
+            uploadedImageUrl = null;
+            document.getElementById('confirmPaymentBtn').disabled = true;
+        }
+        document.getElementById('closePayment').addEventListener('click', () => document.getElementById('paymentModal').style.display = 'none');
+        document.getElementById('payMethodGroup').addEventListener('click', (e) => {
+            const opt = e.target.closest('.radio-option');
+            if (!opt) return;
+            document.querySelectorAll('#payMethodGroup .radio-option').forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            document.getElementById('payInstructions').style.display = 'block';
+            document.getElementById('fileUploadSection').style.display = 'block';
+            document.getElementById('payInstructions').innerHTML = opt.dataset.val === 'zaincash' ? '📱 زين كاش: 07821426607' : '🏦 الرافدين: 7533677139';
+            document.getElementById('confirmPaymentBtn').disabled = true;
+        });
+        document.getElementById('fileUploadArea').addEventListener('click', () => document.getElementById('paymentScreenshot').click());
+        document.getElementById('paymentScreenshot').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const compressed = await compressImage(file, 500);
+            document.getElementById('previewImage').src = URL.createObjectURL(compressed);
+            document.getElementById('previewImage').style.display = 'block';
+            uploadedImageUrl = await uploadToCloudinary(compressed);
+            document.getElementById('confirmPaymentBtn').disabled = false;
+        });
+        document.getElementById('confirmPaymentBtn').addEventListener('click', async () => {
+            if (!uploadedImageUrl) { showToast('ارفع صورة', 'error'); return; }
+            const method = document.querySelector('#payMethodGroup .radio-option.selected')?.dataset.val;
+            if (!method) { showToast('اختر طريقة الدفع', 'error'); return; }
+            await update(ref(db, 'orders/' + currentPaymentOrderId), { paymentMethod: method, paymentScreenshot: uploadedImageUrl, status: 'قيد التدقيق', paidAt: new Date().toISOString() });
+            document.getElementById('paymentModal').style.display = 'none';
+            showToast('✅ تم الإرسال للتدقيق', 'success');
+        });
+
+        function compressImage(file, maxKB) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w = img.width, h = img.height;
+                        if (w > 1200 || h > 1200) { const r = Math.min(1200/w, 1200/h); w *= r; h *= r; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
+                    };
+                    img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        async function uploadToCloudinary(blob) {
+            const fd = new FormData();
+            fd.append('file', blob, 'pay.jpg');
+            fd.append('upload_preset', 'Postion');
+            fd.append('cloud_name', 'fl3npkvv');
+            const res = await fetch('https://api.cloudinary.com/v1_1/fl3npkvv/image/upload', { method: 'POST', body: fd });
+            const data = await res.json();
+            return data.secure_url;
+        }
+    </script>
 </body>
 </html>
+```
