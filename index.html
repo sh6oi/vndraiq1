@@ -8,7 +8,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-        import { getDatabase, ref, set, get, update, onValue } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update, onValue, push } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBNdyY6TkU2aiblwWFG2zppasgqeBzhqyA",
@@ -24,58 +24,38 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        window.firebaseApp = { app, auth, db, ref, set, get, update, onValue, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut };
+        window.firebaseApp = { app, auth, db, ref, set, get, update, onValue, push, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut };
     </script>
     <style>
         :root {
-            --white: #ffffff;
-            --black: #0a0a0a;
-            --gold: #f0b90b;
-            --gold-dark: #c99a08;
-            --gold-light: #fef9e7;
-            --sky: #06b6d4;
-            --sky-light: #e0f7fa;
-            --sky-dark: #0891b2;
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
-            --danger: #ef4444;
-            --success: #10b981;
-            --radius: 20px;
-            --radius-sm: 14px;
-            --radius-xs: 10px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
-            --shadow: 0 4px 20px rgba(0,0,0,0.08);
-            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
-            --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
-            --font: 'Tajawal', 'Segoe UI', 'Cairo', system-ui, sans-serif;
+            --white: #ffffff; --black: #0a0a0a; --gold: #f0b90b; --gold-dark: #c99a08;
+            --gold-light: #fef9e7; --sky: #06b6d4; --sky-light: #e0f7fa; --sky-dark: #0891b2;
+            --gray-50: #f9fafb; --gray-100: #f3f4f6; --gray-200: #e5e7eb; --gray-300: #d1d5db;
+            --gray-400: #9ca3af; --gray-500: #6b7280; --gray-600: #4b5563; --gray-700: #374151;
+            --gray-800: #1f2937; --gray-900: #111827; --danger: #ef4444; --success: #10b981;
+            --radius: 20px; --radius-sm: 14px; --radius-xs: 10px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06); --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.12); --transition: 0.3s ease;
+            --font: 'Tajawal', 'Segoe UI', 'Cairo', sans-serif;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family: var(--font); background: var(--gray-50); color: var(--gray-900); min-height: 100vh; overflow-x: hidden; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; }
-        ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-track { background:transparent; } ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:10px; }
+        body { font-family: var(--font); background: var(--gray-50); color: var(--gray-900); min-height: 100vh; -webkit-tap-highlight-color: transparent; user-select: none; }
+        ::-webkit-scrollbar { width:4px; } ::-webkit-scrollbar-thumb { background:var(--gold); border-radius:10px; }
 
         #authScreen { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:20px; position:fixed; inset:0; z-index:1000; background:var(--white); }
         #authScreen.hidden { display:none; }
         .auth-container { background:var(--white); border-radius:28px; padding:40px 28px; width:100%; max-width:420px; box-shadow:var(--shadow-lg); border:1px solid var(--gray-200); }
-        .auth-logo { text-align:center; margin-bottom:28px; } .auth-logo .icon { font-size:44px; margin-bottom:8px; display:block; }
+        .auth-logo { text-align:center; margin-bottom:28px; } .auth-logo .icon { font-size:44px; display:block; }
         .auth-logo h1 { font-size:30px; font-weight:900; color:var(--black); } .auth-logo h1 span { color:var(--gold); }
         .auth-tabs { display:flex; gap:4px; margin-bottom:24px; background:var(--gray-100); border-radius:35px; padding:5px; }
         .auth-tab { flex:1; padding:12px; text-align:center; border-radius:30px; cursor:pointer; font-weight:700; font-size:14px; transition:var(--transition); color:var(--gray-500); border:none; background:transparent; }
-        .auth-tab.active { background:var(--black); color:var(--gold); box-shadow:0 4px 15px rgba(0,0,0,0.1); }
+        .auth-tab.active { background:var(--black); color:var(--gold); }
         .auth-form { display:none; flex-direction:column; gap:14px; } .auth-form.active { display:flex; }
         .input-group { position:relative; }
         .input-group .icon { position:absolute; right:14px; top:50%; transform:translateY(-50%); font-size:16px; color:var(--gray-400); }
         .input-group input, .input-group select { width:100%; padding:14px 44px 14px 16px; background:var(--gray-50); border:1.5px solid var(--gray-200); border-radius:var(--radius-xs); color:var(--gray-900); font-size:14px; font-family:var(--font); transition:var(--transition); outline:none; }
         .btn { padding:14px 24px; border-radius:30px; font-weight:700; font-size:15px; cursor:pointer; transition:var(--transition); border:none; font-family:var(--font); display:inline-flex; align-items:center; justify-content:center; gap:8px; }
-        .btn-black { background:var(--black); color:var(--gold); } .btn-black:hover { background:var(--gray-800); transform:translateY(-2px); }
-        .btn-gold { background:var(--gold); color:var(--black); font-weight:800; box-shadow:0 4px 15px rgba(240,185,11,0.3); } .btn-gold:hover { transform:translateY(-2px); }
+        .btn-black { background:var(--black); color:var(--gold); } .btn-gold { background:var(--gold); color:var(--black); }
         .btn-outline { background:transparent; border:1.5px solid var(--gray-300); color:var(--gray-700); }
         .btn-danger { background:var(--danger); color:#fff; } .btn-sm { padding:10px 18px; font-size:13px; border-radius:24px; }
         .link-text { text-align:center; color:var(--sky-dark); cursor:pointer; font-size:13px; background:none; border:none; font-weight:600; }
@@ -86,7 +66,7 @@
         .avatar { width:40px; height:40px; border-radius:50%; background:var(--gray-800); display:flex; align-items:center; justify-content:center; color:var(--gold); font-weight:800; }
         .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--white); border-top:1px solid var(--gray-100); display:flex; padding:8px 12px 20px; z-index:100; }
         .bottom-nav .nav-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; color:var(--gray-400); font-size:11px; font-weight:600; transition:var(--transition); padding:8px 4px; border-radius:12px; }
-        .bottom-nav .nav-item.active { color:var(--gold); background:var(--gold-light); } .bottom-nav .nav-item .nav-icon { font-size:20px; }
+        .bottom-nav .nav-item.active { color:var(--gold); background:var(--gold-light); }
         .main-content { padding:20px 16px; max-width:500px; margin:0 auto; }
         .page-section { display:none; animation:fadeSlide 0.35s ease; } .page-section.active { display:block; }
         @keyframes fadeSlide { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
@@ -95,40 +75,41 @@
         .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
         .stat-card { background:var(--gray-50); border-radius:var(--radius-sm); padding:18px 14px; text-align:center; }
         .stat-card .num { font-size:30px; font-weight:900; color:var(--gold); } .stat-card .label { font-size:11px; color:var(--gray-500); }
-
+        .balance-card { background: linear-gradient(135deg, #1f2937, #111827); border-radius: var(--radius); padding: 20px; color: #fff; margin-bottom: 16px; }
+        .balance-amount { font-size: 32px; font-weight: 900; color: var(--gold); }
+        .countdown-timer { font-size: 14px; color: #fff; margin-top: 8px; display: flex; gap: 8px; justify-content: flex-start; flex-wrap: wrap; }
+        .countdown-item { background: rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 8px; text-align: center; }
+        .countdown-item span { font-size: 18px; font-weight: 800; color: var(--gold); display: block; }
         .shein-instructions { background: var(--sky-light); border: 1.5px solid var(--sky); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
         .shein-instructions .step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
-        .shein-instructions .step:last-child { margin-bottom: 0; }
         .step-number { background: var(--sky); color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
         .step-text { font-size: 14px; color: var(--gray-800); line-height: 1.5; font-weight: 500; }
-        .step-text strong { color: var(--black); }
-
         .badge { display:inline-block; padding:5px 11px; border-radius:16px; font-size:10px; font-weight:700; }
         .badge-review { background:#fef3c7; color:#b45309; } .badge-payment { background:#dbeafe; color:#1d4ed8; }
         .badge-audit { background:#ede9fe; color:#6d28d9; } .badge-process { background:#cffafe; color:#0e7490; }
-        .badge-shipping { background:#ffedd5; color:#c2410c; } .badge-delivered { background:#d1fae5; color:#047857; } .badge-cancelled { background:#fee2e2; color:#dc2626; }
+        .badge-shipping { background:#ffedd5; color:#c2410c; } .badge-delivered { background:#d1fae5; color:#047857; }
         .order-card { background:var(--white); border-radius:var(--radius-sm); padding:16px; margin-bottom:10px; border:1px solid var(--gray-100); cursor:pointer; transition:var(--transition); }
         .order-card:hover { border-color:var(--gold); transform:translateY(-2px); }
         .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(4px); }
         .modal { background:var(--white); border-radius:var(--radius); padding:24px 20px; width:100%; max-width:500px; max-height:85vh; overflow-y:auto; border:1px solid var(--gray-100); }
         .modal h3 { color:var(--black); text-align:center; margin-bottom:18px; font-weight:800; }
         .detail-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--gray-100); font-size:14px; }
-        .highlight-box { background:var(--gold-light); border:1px dashed var(--gold); border-radius:10px; padding:14px; margin:12px 0; }
         .toast { position:fixed; bottom:90px; left:50%; transform:translateX(-50%); background:var(--black); color:var(--gold); padding:12px 24px; border-radius:30px; z-index:999; font-weight:700; animation:slideUp 0.35s; }
         @keyframes slideUp { from{opacity:0; transform:translateX(-50%) translateY(20px);} }
         .toast.success { background:var(--success); color:#fff; } .toast.error { background:var(--danger); color:#fff; }
-        .progress-bar { width: 100%; height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; }
-        .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: width 0.2s; }
-        .progress-text { font-size: 12px; color: var(--gray-500); margin-top: 4px; text-align: center; }
+        .progress-bar { width:100%; height:8px; background:var(--gray-200); border-radius:4px; overflow:hidden; }
+        .progress-fill { height:100%; background:var(--gold); width:0%; transition:width 0.2s; }
+        .error-msg, .success-msg { padding:12px; border-radius:10px; font-size:14px; text-align:center; margin-bottom:12px; display:none; }
+        .error-msg { background:#fef2f2; color:#dc2626; } .success-msg { background:#ecfdf5; color:#059669; }
     </style>
 </head>
 <body>
+    <!-- AUTH SCREEN -->
     <div id="authScreen">
         <div class="auth-container">
             <div class="auth-logo"><span class="icon">🛒</span><h1>فن<span>در</span></h1></div>
             <div class="auth-tabs"><button class="auth-tab active" data-tab="login">تسجيل الدخول</button><button class="auth-tab" data-tab="signup">إنشاء حساب</button></div>
-            <div id="authError" class="error-msg" style="background:#fef2f2;color:#dc2626;padding:12px;border-radius:10px;display:none;"></div>
-            <div id="authSuccess" class="success-msg" style="background:#ecfdf5;color:#059669;padding:12px;border-radius:10px;display:none;"></div>
+            <div id="authError" class="error-msg"></div><div id="authSuccess" class="success-msg"></div>
             <form id="loginForm" class="auth-form active" autocomplete="off">
                 <div class="input-group"><span class="icon">📧</span><input type="email" id="loginEmail" placeholder="البريد الإلكتروني" required></div>
                 <div class="input-group"><span class="icon">🔒</span><input type="password" id="loginPass" placeholder="كلمة المرور" required></div>
@@ -145,101 +126,351 @@
                 <div class="input-group"><span class="icon">🔒</span><input type="password" id="signPass" placeholder="كلمة المرور (6 أحرف)" required minlength="6"></div>
                 <button type="submit" class="btn btn-black" style="width:100%;">إنشاء حساب</button>
             </form>
-            <form id="forgotForm" class="auth-form" autocomplete="off">
-                <h3 style="text-align:center; color:var(--black);">🔑 استعادة كلمة المرور</h3>
-                <div class="input-group"><span class="icon">📧</span><input type="email" id="forgotEmail" placeholder="البريد الإلكتروني" required></div>
-                <button type="submit" class="btn btn-black" style="width:100%;">إرسال الرابط</button>
-                <button type="button" class="link-text" id="backToLogin">العودة لتسجيل الدخول</button>
-            </form>
+            <form id="forgotForm" class="auth-form" style="display:none;"><h3 style="text-align:center;">🔑 استعادة كلمة المرور</h3><div class="input-group"><span class="icon">📧</span><input type="email" id="forgotEmail" placeholder="البريد الإلكتروني" required></div><button type="submit" class="btn btn-black" style="width:100%;">إرسال الرابط</button><button type="button" class="link-text" id="backToLogin">العودة لتسجيل الدخول</button></form>
         </div>
     </div>
 
+    <!-- APP SCREEN -->
     <div id="appScreen">
         <div class="top-bar"><span class="brand">فن<span>در</span></span><div class="avatar" id="avatarBtn">ف</div></div>
         <div class="main-content">
             <section class="page-section active" id="pageDashboard">
-                <div class="card"><div class="card-header">📊 الإحصائيات</div><div class="stats-grid"><div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">الطلبات</div></div><div class="stat-card"><div class="num" id="statPending">0</div><div class="label">قيد المراجعة</div></div><div class="stat-card"><div class="num" id="statShipping">0</div><div class="label">قيد الشحن</div></div><div class="stat-card"><div class="num" id="statDelivered">0</div><div class="label">تم التسليم</div></div></div></div>
-                <div class="shein-instructions">
-                    <div class="card-header" style="margin-bottom:12px; color:var(--sky-dark);">🛍️ تعليمات الطلب من شي إن</div>
-                    <div class="step"><div class="step-number">1</div><div class="step-text"><strong>تحميل تطبيق شي إن</strong> من متجر التطبيقات.</div></div>
-                    <div class="step"><div class="step-number">2</div><div class="step-text">تغيير <strong>الدولة إلى البحرين</strong> 🇧🇭 والعملة إلى <strong>الدولار ($)</strong>.</div></div>
-                    <div class="step"><div class="step-number">3</div><div class="step-text">تسجيل الخروج من جميع الحسابات وذلك للاعتماد على خصومات الموقع وليس الخصومات الشخصية المختلفة من حساب الى اخر.</div></div>
-                    <div class="step"><div class="step-number">4</div><div class="step-text">إضافة المنتجات إلى سلة التسوق، ثم <strong>مشاركة رابط السلة ونسخه</strong>.</div></div>
-<div class="step"><div class="step-number">5</div><div class="step-text"> العودة إلى موقعنا. ثم الضغط على "إضافة طلب جديد" و لصق رابط السلة في خانة الطلب".</div></div><div class="step"><div class="step-number">6</div><div class="step-text">علما ان الشحن مجاني بدون تحميل وسعر الصرف 1250 فقط و التوصيل مجاني لأول طلب والشحن سريع من 12-15 يوم ".</div></div>
+                <div class="balance-card">
+                    <div><div style="font-size:14px; opacity:0.8;">💰 رصيدك الحالي</div><div class="balance-amount" id="balanceAmount">0 د.ع</div>
+                    <div id="countdownContainer" class="countdown-timer" style="display:none;">
+                        <div class="countdown-item"><span id="cdDays">0</span>يوم</div>
+                        <div class="countdown-item"><span id="cdHours">0</span>ساعة</div>
+                        <div class="countdown-item"><span id="cdMinutes">0</span>دقيقة</div>
+                        <div class="countdown-item"><span id="cdSeconds">0</span>ثانية</div>
+                    </div></div>
                 </div>
+                <div class="card"><div class="card-header">📊 الإحصائيات</div><div class="stats-grid"><div class="stat-card"><div class="num" id="statTotal">0</div><div class="label">الطلبات</div></div><div class="stat-card"><div class="num" id="statPending">0</div><div class="label">قيد المراجعة</div></div><div class="stat-card"><div class="num" id="statShipping">0</div><div class="label">قيد الشحن</div></div><div class="stat-card"><div class="num" id="statDelivered">0</div><div class="label">تم التسليم</div></div></div></div>
+                <div class="shein-instructions"><div class="card-header">🛍️ تعليمات شي إن</div><div class="step"><div class="step-number">1</div><div class="step-text">تحميل تطبيق شي إن</div></div><div class="step"><div class="step-number">2</div><div class="step-text">تغيير الدولة إلى البحرين والعملة إلى $</div></div><div class="step"><div class="step-number">3</div><div class="step-text">تسجيل الخروج من جميع الحسابات وذلك للاعتماد على خصومات الموقع وليس الخصومات الشخصية المختلفة من حساب الى اخر.</div></div><div class="step"><div class="step-number">4</div><div class="step-text"> إضافة المنتجات ونسخ رابط السلة ثم العودة إلى موقعنا. ثم الضغط على "إضافة طلب جديد" و لصق رابط السلة في خانة الطلب</div></div><div class="step"><div class="step-number">5</div><div class="step-text"> علما ان الشحن مجاني بدون تحميل وسعر الصرف
+1200 فقط و التوصيل مجاني لأول طلب والشحن سريع من 12-15 يوم"  </div></div></div>
                 <button class="btn btn-gold" style="width:100%; padding:16px; margin-bottom:16px;" id="addOrderBtn">➕ إضافة طلب جديد</button>
-                <div class="card"><div class="card-header">🕒 آخر الطلبات</div><div id="recentOrdersContainer"><div style="text-align:center; color:var(--gray-400);">لا توجد طلبات</div></div></div>
+                <div class="card"><div class="card-header">🕒 آخر الطلبات</div><div id="recentOrdersContainer"></div></div>
             </section>
             <section class="page-section" id="pageTrackOrders"><div class="card"><div class="card-header">📦 تتبع الطلبات</div><div id="ordersList"></div></div></section>
+            <section class="page-section" id="pageBalanceHistory"><div class="card"><div class="card-header">📋 سجل الرصيد</div><div id="balanceHistoryContainer"></div></div></section>
             <section class="page-section" id="pageAccountInfo"><div class="card"><div class="card-header">👤 معلومات الحساب</div><div id="accountDetails"></div></div></section>
-            <section class="page-section" id="pageSupport"><div class="card"><div class="card-header">💬 الدعم الفني</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><a href="https://www.instagram.com/vndr1q?igsh=MXR0cHNsY3VheTRkZw==" target="_blank" style="background:var(--sky-light); padding:20px; border-radius:var(--radius-sm); text-align:center; color:var(--sky-dark); text-decoration:none; font-weight:700;">📷 Instagram</a><a href="https://wa.me/message/LPX3FF4TG4XWK1" target="_blank" style="background:#dcfce7; padding:20px; border-radius:var(--radius-sm); text-align:center; color:#166534; text-decoration:none; font-weight:700;">💬 WhatsApp</a></div></div></section>
+            <section class="page-section" id="pageSupport"><div class="card"><div class="card-header">💬 الدعم الفني</div><div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;"><a href="https://www.instagram.com/vndr1q" target="_blank" style="background:var(--sky-light); padding:20px; border-radius:var(--radius-sm); text-align:center; color:var(--sky-dark); text-decoration:none; font-weight:700;">📷 Instagram</a><a href="https://wa.me/message/LPX3FF4TG4XWK1" target="_blank" style="background:#dcfce7; padding:20px; border-radius:var(--radius-sm); text-align:center; color:#166534; text-decoration:none; font-weight:700;">💬 WhatsApp</a></div></div></section>
         </div>
         <nav class="bottom-nav">
-            <div class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>الرئيسية</div>
-            <div class="nav-item" data-page="trackOrders"><span class="nav-icon">📦</span>الطلبات</div>
-            <div class="nav-item" data-page="accountInfo"><span class="nav-icon">👤</span>حسابي</div>
-            <div class="nav-item" data-page="support"><span class="nav-icon">💬</span>الدعم</div>
-            <div class="nav-item" id="logoutBtn"><span class="nav-icon">🚪</span>خروج</div>
+            <div class="nav-item active" data-page="dashboard">🏠 الرئيسية</div>
+            <div class="nav-item" data-page="trackOrders">📦 الطلبات</div>
+            <div class="nav-item" data-page="balanceHistory">💰 الرصيد</div>
+            <div class="nav-item" data-page="accountInfo">👤 حسابي</div>
+            <div class="nav-item" id="logoutBtn">🚪 خروج</div>
         </nav>
     </div>
 
-    <div id="addOrderModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeAddOrder">✕</button><h3>➕ طلب جديد</h3><form id="addOrderForm"><div class="input-group"><input type="url" id="cartLink" placeholder="رابط السلة" required></div><div class="radio-group" style="display:flex; gap:10px; margin:12px 0;"><label class="radio-option selected" data-val="no" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px solid var(--gray-200);"><input type="radio" name="hasDuplicates" value="no" checked> ❌ لا مكرر</label><label class="radio-option" data-val="yes" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px solid var(--gray-200);"><input type="radio" name="hasDuplicates" value="yes"> ✅ يوجد</label></div><div id="duplicateProductsContainer" style="display:none;"><div id="dupFields"></div><button type="button" class="btn btn-outline btn-sm" id="addDupRow">➕ إضافة منتج آخر</button></div><button type="submit" class="btn btn-gold" style="width:100%; margin-top:12px;">📩 إتمام الطلب</button></form></div></div>
-    <div id="orderDetailModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeOrderDetail">✕</button><h3>📋 تفاصيل الطلب</h3><div id="orderDetailContent"></div></div></div>
-    <div id="paymentModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closePayment">✕</button><h3>💳 إتمام الدفع</h3><div id="paymentDetails"></div><div id="payMethodGroup" style="display:flex; gap:10px; margin:12px 0;"></div><div id="payInstructions" style="display:none; padding:12px; background:var(--gray-50); border-radius:8px; margin:10px 0;"></div><div id="fileUploadSection" style="display:none;"><label for="paymentScreenshot" id="fileUploadArea" style="display:block; padding:20px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px dashed var(--gray-300);"><span style="font-size:32px;">📸</span><p style="margin-top:6px;">اضغط لرفع صورة التحويل</p></label><input type="file" id="paymentScreenshot" accept="image/*" style="display:none;" /><img id="previewImage" style="display:none; max-width:100%; max-height:200px; margin-top:10px; border-radius:8px;"></div><div id="uploadProgress" style="display:none; margin:12px 0;"><div class="progress-bar"><div id="progressFill" class="progress-fill" style="width:0%;"></div></div><div id="progressText" class="progress-text">جاري الضغط...</div></div><button class="btn btn-gold" id="confirmPaymentBtn" disabled>✅ دفع العربون</button></div></div>
+    <!-- MODALS -->
+    <div id="addOrderModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeAddOrder" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button><h3>➕ طلب جديد</h3><form id="addOrderForm"><div class="input-group"><input type="url" id="cartLink" placeholder="رابط السلة" required></div><div class="radio-group" style="display:flex; gap:10px; margin:12px 0;"><label class="radio-option selected" data-val="no" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px;"><input type="radio" name="hasDuplicates" value="no" checked> ❌ لا مكرر</label><label class="radio-option" data-val="yes" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px;"><input type="radio" name="hasDuplicates" value="yes"> ✅ يوجد</label></div><div id="duplicateProductsContainer" style="display:none;"><div id="dupFields"></div><button type="button" class="btn btn-outline btn-sm" id="addDupRow">➕ إضافة منتج آخر</button></div><p style="font-size:13px;color:var(--gray-500);margin-top:8px;" id="balanceNote"></p><button type="submit" class="btn btn-gold" style="width:100%; margin-top:12px;">📩 إتمام الطلب</button></form></div></div>
+    <div id="orderDetailModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closeOrderDetail" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button><h3>📋 تفاصيل الطلب</h3><div id="orderDetailContent"></div></div></div>
+    <div id="paymentModal" class="modal-overlay" style="display:none;"><div class="modal"><button class="close-modal" id="closePayment" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button><h3>💳 إتمام الدفع</h3><div id="paymentDetails"></div><div id="payMethodGroup" style="display:flex; gap:10px; margin:12px 0;"></div><div id="payInstructions" style="display:none;"></div><div id="fileUploadSection" style="display:none;"><label for="paymentScreenshot" id="fileUploadArea" style="display:block; padding:20px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px dashed var(--gray-300);"><span>📸</span><p>اضغط لرفع صورة التحويل</p></label><input type="file" id="paymentScreenshot" accept="image/*" style="display:none;"><img id="previewImage" style="display:none; max-width:100%; max-height:200px; margin-top:10px; border-radius:8px;"></div><div id="uploadProgress" style="display:none;"><div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div><div id="progressText" style="font-size:12px; color:var(--gray-500); margin-top:4px; text-align:center;"></div></div><button class="btn btn-gold" id="confirmPaymentBtn" disabled>✅ دفع العربون</button></div></div>
     <div id="toastContainer"></div>
 
     <script type="module">
-        const { auth, db, ref, set, get, update, onValue, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } = window.firebaseApp;
-        let currentUser=null, currentUserData=null, currentPaymentOrderId=null, uploadedImageUrl=null, allOrders=[];
+        const { auth, db, ref, set, get, update, onValue, push, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, onAuthStateChanged, signOut } = window.firebaseApp;
+        let currentUser=null, currentUserData=null, allOrders=[], currentPaymentOrderId=null, uploadedImageUrl=null, countdownInterval=null;
 
-        function floorToThousand(v){return v?Math.floor(v/1000)*1000:0;}
-        function formatIQD(v){return v?floorToThousand(v).toLocaleString()+' د.ع':'—';}
         function showToast(m,t=''){const e=document.createElement('div');e.className='toast '+t;e.textContent=m;document.getElementById('toastContainer').appendChild(e);setTimeout(()=>e.remove(),2500);}
         function getBadge(s){const m={'قيد المراجعة':'badge-review','بانتظار الدفع':'badge-payment','قيد التدقيق':'badge-audit','قيد التجهيز':'badge-process','قيد الشحن للكويت':'badge-shipping','قيد الشحن للعراق':'badge-shipping','تم التسليم':'badge-delivered','ملغي':'badge-cancelled'};return m[s]||'badge-review';}
         function formatDate(iso){return iso?new Date(iso).toLocaleDateString('ar-IQ',{year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—';}
+        function floorToThousand(v){return v?Math.floor(v/1000)*1000:0;}
 
-        // Auth UI
-        document.querySelectorAll('.auth-tab').forEach(t=>t.addEventListener('click',function(){document.querySelectorAll('.auth-tab').forEach(x=>x.classList.remove('active'));this.classList.add('active');document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));document.getElementById(this.dataset.tab==='login'?'loginForm':'signupForm').classList.add('active');}));
-        document.getElementById('showForgot').onclick=()=>{document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));document.getElementById('forgotForm').classList.add('active');document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));};
-        document.getElementById('backToLogin').onclick=()=>{document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));document.getElementById('loginForm').classList.add('active');document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));document.querySelector('[data-tab="login"]').classList.add('active');};
-        document.getElementById('signupForm').addEventListener('submit',async(e)=>{e.preventDefault();const n=document.getElementById('signName').value.trim(),p1=document.getElementById('signPhone1').value.trim(),p2=document.getElementById('signPhone2').value.trim(),pr=document.getElementById('signProvince').value,ad=document.getElementById('signAddress').value.trim(),em=document.getElementById('signEmail').value.trim(),ps=document.getElementById('signPass').value;if(!n||!p1||!pr||!ad||!em||!ps){showToast('املأ الحقول','error');return;}try{const c=await createUserWithEmailAndPassword(auth,em,ps);await set(ref(db,'users/'+c.user.uid),{name:n,phone1:p1,phone2:p2||'',province:pr,address:ad,email:em,createdAt:new Date().toISOString()});document.getElementById('authSuccess').textContent='✅ تم إنشاء الحساب';document.getElementById('authSuccess').style.display='block';document.getElementById('signupForm').reset();setTimeout(()=>{document.getElementById('loginForm').classList.add('active');document.getElementById('signupForm').classList.remove('active');document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));document.querySelector('[data-tab="login"]').classList.add('active');},1500);}catch(err){showToast('⚠️ '+err.message,'error');}});
-        document.getElementById('loginForm').addEventListener('submit',async(e)=>{e.preventDefault();try{await signInWithEmailAndPassword(auth,document.getElementById('loginEmail').value.trim(),document.getElementById('loginPass').value);}catch(err){showToast('⚠️ '+err.message,'error');}});
-        document.getElementById('forgotForm').addEventListener('submit',async(e)=>{e.preventDefault();try{await sendPasswordResetEmail(auth,document.getElementById('forgotEmail').value.trim());showToast('✅ تم إرسال رابط الاستعادة','success');}catch(err){showToast('⚠️ '+err.message,'error');}});
+        // AUTH
+        document.querySelectorAll('.auth-tab').forEach(t=>t.addEventListener('click',function(){
+            document.querySelectorAll('.auth-tab').forEach(x=>x.classList.remove('active')); this.classList.add('active');
+            document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active'));
+            document.getElementById(this.dataset.tab==='login'?'loginForm':'signupForm').classList.add('active');
+            document.getElementById('authError').style.display='none'; document.getElementById('authSuccess').style.display='none';
+        }));
+        document.getElementById('showForgot').onclick=()=>{ document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active')); document.getElementById('forgotForm').classList.add('active'); };
+        document.getElementById('backToLogin').onclick=()=>{ document.querySelectorAll('.auth-form').forEach(f=>f.classList.remove('active')); document.getElementById('loginForm').classList.add('active'); document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active')); document.querySelector('[data-tab="login"]').classList.add('active'); };
 
-        onAuthStateChanged(auth,async(user)=>{if(user){currentUser=user;const snap=await get(ref(db,'users/'+user.uid));if(snap.exists())currentUserData=snap.val();localStorage.setItem('vndr_session','1');document.getElementById('authScreen').classList.add('hidden');document.getElementById('appScreen').classList.add('active');updateUI();loadOrders();navigateTo('dashboard');}else{if(!localStorage.getItem('vndr_session')){document.getElementById('authScreen').classList.remove('hidden');document.getElementById('appScreen').classList.remove('active');}}});
-        function updateUI(){if(!currentUserData)return;document.getElementById('avatarBtn').textContent=(currentUserData.name||'ف').charAt(0);document.getElementById('accountDetails').innerHTML=`<div class="detail-row"><span class="dl">الاسم</span><span class="dv">${currentUserData.name||'-'}</span></div><div class="detail-row"><span class="dl">البريد</span><span class="dv">${currentUserData.email||'-'}</span></div><div class="detail-row"><span class="dl">الهاتف 1</span><span class="dv">${currentUserData.phone1||'-'}</span></div><div class="detail-row"><span class="dl">الهاتف 2</span><span class="dv">${currentUserData.phone2||'-'}</span></div><div class="detail-row"><span class="dl">المحافظة</span><span class="dv">${currentUserData.province||'-'}</span></div><div class="detail-row"><span class="dl">العنوان</span><span class="dv">${currentUserData.address||'-'}</span></div>`;}
-        document.querySelectorAll('.bottom-nav .nav-item[data-page]').forEach(item=>item.addEventListener('click',function(){navigateTo(this.dataset.page);}));
-        document.getElementById('logoutBtn').onclick=async()=>{await signOut(auth);localStorage.removeItem('vndr_session');document.getElementById('authScreen').classList.remove('hidden');document.getElementById('appScreen').classList.remove('active');};
-        function navigateTo(page){document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));document.getElementById('page'+(page==='dashboard'?'Dashboard':page==='trackOrders'?'TrackOrders':page==='accountInfo'?'AccountInfo':'Support')).classList.add('active');document.querySelectorAll('.bottom-nav .nav-item').forEach(n=>n.classList.remove('active'));document.querySelector(`.bottom-nav .nav-item[data-page="${page}"]`)?.classList.add('active');if(page==='trackOrders')renderOrdersList();if(page==='dashboard'){updateStats();renderRecentOrders();}}
-        function loadOrders(){onValue(ref(db,'orders'),snap=>{allOrders=[];if(snap.exists())Object.entries(snap.val()).forEach(([k,v])=>{if(v.userId===currentUser.uid)allOrders.push({id:k,...v});});allOrders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));renderOrdersList();renderRecentOrders();updateStats();});}
-        function renderOrdersList(){const c=document.getElementById('ordersList');if(!allOrders.length){c.innerHTML='<div style="text-align:center;color:var(--gray-400);padding:30px;">لا توجد طلبات</div>';return;}c.innerHTML=allOrders.map(o=>`<div class="order-card" data-id="${o.id}"><div style="display:flex;justify-content:space-between;"><strong>${o.orderNumber||o.id}</strong><span class="badge ${getBadge(o.status)}">${o.status}</span></div><div style="font-size:12px;color:var(--gray-500);">${formatDate(o.createdAt)}</div>${o.totalIQD?`<div style="margin-top:6px;color:var(--gold);">💰 ${formatIQD(o.totalIQD)}</div>`:''}${o.status==='بانتظار الدفع'?`<div style="margin-top:10px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm pay-btn" data-id="${o.id}">💳 ادفع</button><button class="btn btn-danger btn-sm cancel-btn" data-id="${o.id}">❌ إلغاء</button></div>`:''}</div>`).join('');c.querySelectorAll('.order-card').forEach(card=>card.addEventListener('click',(e)=>{if(!e.target.closest('button'))openOrderDetail(card.dataset.id);}));c.querySelectorAll('.pay-btn').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();openPaymentModal(b.dataset.id);}));c.querySelectorAll('.cancel-btn').forEach(b=>b.addEventListener('click',(e)=>{e.stopPropagation();cancelOrder(b.dataset.id);}));}
-        function renderRecentOrders(){const c=document.getElementById('recentOrdersContainer');const recent=allOrders.slice(0,5);if(!recent.length){c.innerHTML='<div style="text-align:center;color:var(--gray-400);">لا توجد طلبات</div>';return;}c.innerHTML=recent.map(o=>`<div class="order-card" data-id="${o.id}" style="padding:14px;"><div style="display:flex;justify-content:space-between;"><span>${o.orderNumber||o.id}</span><span class="badge ${getBadge(o.status)}">${o.status}</span></div><div style="font-size:11px;color:var(--gray-500);">${formatDate(o.createdAt)}</div></div>`).join('');c.querySelectorAll('.order-card').forEach(card=>card.addEventListener('click',()=>openOrderDetail(card.dataset.id)));}
-        function updateStats(){document.getElementById('statTotal').textContent=allOrders.length;document.getElementById('statPending').textContent=allOrders.filter(o=>o.status==='قيد المراجعة').length;document.getElementById('statShipping').textContent=allOrders.filter(o=>o.status?.includes('شحن')).length;document.getElementById('statDelivered').textContent=allOrders.filter(o=>o.status==='تم التسليم').length;}
-        function openOrderDetail(orderId){const order=allOrders.find(o=>o.id===orderId);if(!order)return;const total=order.totalIQD||0,down=order.downPayment||0;let remaining=null;if(order.status==='قيد التجهيز'&&total&&down)remaining=floorToThousand(total-down);else if(order.remainingAmount)remaining=floorToThousand(order.remainingAmount);let dupHtml='';if(order.hasDuplicates&&order.duplicateProducts?.length){dupHtml='<div class="highlight-box"><strong>📋 منتجات مكررة:</strong><br>';order.duplicateProducts.forEach((d,i)=>dupHtml+=`${i+1}. <a href="${d.link}" target="_blank">${d.link}</a> (العدد: ${d.quantity})<br>`);dupHtml+='</div>';}document.getElementById('orderDetailContent').innerHTML=`<div class="detail-row"><span class="dl">🔖 الطلب</span><span>${order.orderNumber||order.id}</span></div><div class="detail-row"><span class="dl">📊 الحالة</span><span class="badge ${getBadge(order.status)}">${order.status}</span></div><div class="detail-row"><span class="dl">📅 التاريخ</span><span>${formatDate(order.createdAt)}</span></div><div class="detail-row"><span class="dl">🔗 السلة</span><span><a href="${order.cartLink}" target="_blank">${order.cartLink||'—'}</a></span></div>${dupHtml}<div class="detail-row"><span class="dl">💵 $</span><span>${order.priceUSD||'—'}</span></div><div class="detail-row"><span class="dl">💵 د.ع</span><span>${formatIQD(order.priceIQD)}</span></div><div class="detail-row"><span class="dl">🚚 توصيل</span><span>${formatIQD(order.deliveryFee)}</span></div><div class="detail-row"><span class="dl">📊 الإجمالي</span><span style="color:var(--gold);">${formatIQD(order.totalIQD)}</span></div><div class="detail-row"><span class="dl">🔐 العربون</span><span>${formatIQD(order.downPayment)}</span></div>${remaining!=null?`<div class="detail-row"><span class="dl">💸 المتبقي</span><span style="color:var(--success);">${formatIQD(remaining)}</span></div>`:''}<div class="detail-row"><span class="dl">💳 الدفع</span><span>${order.paymentMethod==='zaincash'?'📱 زين كاش':order.paymentMethod==='rafidain'?'🏦 الرافدين':'—'}</span></div>${order.paymentScreenshot?`<div style="margin-top:10px;"><strong>📸 صورة التحويل:</strong><br><img src="${order.paymentScreenshot}" style="max-width:100%; max-height:200px;"></div>`:''}${order.status==='بانتظار الدفع'?`<div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm" id="detailPayBtn">💳 ادفع</button><button class="btn btn-danger btn-sm" id="detailCancelBtn">❌ إلغاء</button></div>`:''}`;document.getElementById('orderDetailModal').style.display='flex';document.getElementById('detailPayBtn')?.addEventListener('click',()=>{document.getElementById('orderDetailModal').style.display='none';openPaymentModal(orderId);});document.getElementById('detailCancelBtn')?.addEventListener('click',()=>{document.getElementById('orderDetailModal').style.display='none';cancelOrder(orderId);});}
+        document.getElementById('signupForm').addEventListener('submit',async(e)=>{
+            e.preventDefault();
+            const n=document.getElementById('signName').value.trim(),p1=document.getElementById('signPhone1').value.trim(),p2=document.getElementById('signPhone2').value.trim(),pr=document.getElementById('signProvince').value,ad=document.getElementById('signAddress').value.trim(),em=document.getElementById('signEmail').value.trim(),ps=document.getElementById('signPass').value;
+            if(!n||!p1||!pr||!ad||!em||!ps){document.getElementById('authError').textContent='يرجى ملء جميع الحقول';document.getElementById('authError').style.display='block';return;}
+            try{
+                const c=await createUserWithEmailAndPassword(auth,em,ps);
+                await set(ref(db,'users/'+c.user.uid),{name:n,phone1:p1,phone2:p2,province:pr,address:ad,email:em,balance:0,balanceExpiry:null,createdAt:new Date().toISOString()});
+                document.getElementById('authSuccess').textContent='✅ تم إنشاء الحساب';document.getElementById('authSuccess').style.display='block';
+                document.getElementById('signupForm').reset();
+                setTimeout(()=>{document.getElementById('loginForm').classList.add('active');document.getElementById('signupForm').classList.remove('active');document.querySelectorAll('.auth-tab').forEach(t=>t.classList.remove('active'));document.querySelector('[data-tab="login"]').classList.add('active');},1500);
+            }catch(err){document.getElementById('authError').textContent='خطأ: '+err.message;document.getElementById('authError').style.display='block';}
+        });
+
+        document.getElementById('loginForm').addEventListener('submit',async(e)=>{
+            e.preventDefault();
+            const em=document.getElementById('loginEmail').value.trim(), ps=document.getElementById('loginPass').value;
+            try{await signInWithEmailAndPassword(auth,em,ps);document.getElementById('authError').style.display='none';}
+            catch(err){document.getElementById('authError').textContent='خطأ في البريد أو كلمة المرور';document.getElementById('authError').style.display='block';}
+        });
+
+        document.getElementById('forgotForm').addEventListener('submit',async(e)=>{
+            e.preventDefault();const em=document.getElementById('forgotEmail').value.trim();
+            try{await sendPasswordResetEmail(auth,em);document.getElementById('authSuccess').textContent='تم إرسال رابط الاستعادة';document.getElementById('authSuccess').style.display='block';}
+            catch(err){document.getElementById('authError').textContent='خطأ: '+err.message;document.getElementById('authError').style.display='block';}
+        });
+
+        onAuthStateChanged(auth,async(user)=>{
+            if(user){
+                currentUser=user;
+                const snap=await get(ref(db,'users/'+user.uid));
+                if(snap.exists()) currentUserData=snap.val(); else currentUserData={};
+                await checkAndResetExpiredBalance();
+                localStorage.setItem('vndr_session','1');
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.add('active');
+                updateUI(); loadOrders(); navigateTo('dashboard');
+            }else{
+                if(!localStorage.getItem('vndr_session')){
+                    document.getElementById('authScreen').classList.remove('hidden');
+                    document.getElementById('appScreen').classList.remove('active');
+                }
+            }
+        });
+
+        async function checkAndResetExpiredBalance(){
+            if(!currentUser)return;
+            const userRef=ref(db,'users/'+currentUser.uid);
+            const snap=await get(userRef);
+            if(!snap.exists())return;
+            const data=snap.val();
+            if(data.balanceExpiry && new Date(data.balanceExpiry) < new Date()){
+                await update(userRef,{balance:0,balanceExpiry:null});
+                currentUserData.balance=0; currentUserData.balanceExpiry=null;
+            }
+        }
+
+        function updateUI(){
+            if(!currentUserData)return;
+            document.getElementById('avatarBtn').textContent=(currentUserData.name||'ف').charAt(0);
+            document.getElementById('accountDetails').innerHTML=`<div class="detail-row"><span>الاسم</span><span>${currentUserData.name||'-'}</span></div><div class="detail-row"><span>البريد</span><span>${currentUserData.email||'-'}</span></div><div class="detail-row"><span>الهاتف</span><span>${currentUserData.phone1||'-'}</span></div>`;
+            updateBalanceDisplay();
+        }
+
+        function updateBalanceDisplay(){
+            const bal=currentUserData?.balance||0;
+            document.getElementById('balanceAmount').textContent=bal.toLocaleString()+' د.ع';
+            const expiry=currentUserData?.balanceExpiry;
+            const countdownContainer=document.getElementById('countdownContainer');
+            if(countdownInterval)clearInterval(countdownInterval);
+            if(bal>0 && expiry){
+                countdownContainer.style.display='flex';
+                startCountdown(new Date(expiry));
+            }else{
+                countdownContainer.style.display='none';
+            }
+            const balanceNote=document.getElementById('balanceNote');
+            if(balanceNote){
+                if(bal>0) balanceNote.textContent=`💰 سيتم خصم رصيدك (${bal.toLocaleString()} د.ع) عند التجهيز`;
+                else balanceNote.textContent='';
+            }
+        }
+
+        function startCountdown(expiryDate){
+            function update(){
+                const now=new Date();
+                const diff=expiryDate-now;
+                if(diff<=0){
+                    document.getElementById('cdDays').textContent='0'; document.getElementById('cdHours').textContent='0';
+                    document.getElementById('cdMinutes').textContent='0'; document.getElementById('cdSeconds').textContent='0';
+                    if(countdownInterval)clearInterval(countdownInterval);
+                    update(ref(db,'users/'+currentUser.uid),{balance:0,balanceExpiry:null});
+                    currentUserData.balance=0; currentUserData.balanceExpiry=null;
+                    updateBalanceDisplay(); return;
+                }
+                document.getElementById('cdDays').textContent=Math.floor(diff/(1000*60*60*24));
+                document.getElementById('cdHours').textContent=Math.floor((diff%(1000*60*60*24))/(1000*60*60));
+                document.getElementById('cdMinutes').textContent=Math.floor((diff%(1000*60*60))/(1000*60));
+                document.getElementById('cdSeconds').textContent=Math.floor((diff%(1000*60))/1000);
+            }
+            update(); countdownInterval=setInterval(update,1000);
+        }
+
+        function navigateTo(page){
+            document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+            document.getElementById('page'+(page==='dashboard'?'Dashboard':page==='trackOrders'?'TrackOrders':page==='accountInfo'?'AccountInfo':page==='balanceHistory'?'BalanceHistory':'Support')).classList.add('active');
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(n=>n.classList.remove('active'));
+            document.querySelector(`.bottom-nav .nav-item[data-page="${page}"]`)?.classList.add('active');
+            if(page==='trackOrders')renderOrdersList();
+            if(page==='balanceHistory')renderBalanceHistory();
+            if(page==='dashboard'){updateStats();renderRecentOrders();}
+        }
+
+        document.querySelectorAll('.bottom-nav .nav-item[data-page]').forEach(item=>{item.addEventListener('click',()=>navigateTo(item.dataset.page));});
+        document.getElementById('logoutBtn').addEventListener('click',async()=>{await signOut(auth);localStorage.removeItem('vndr_session');});
+
+        function loadOrders(){
+            onValue(ref(db,'orders'),async snap=>{
+                allOrders=[];
+                if(snap.exists())Object.entries(snap.val()).forEach(([k,v])=>{if(v.userId===currentUser?.uid)allOrders.push({id:k,...v});});
+                allOrders.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+                await processOrders();
+                renderOrdersList();renderRecentOrders();updateStats();
+            });
+        }
+
+        async function processOrders(){
+            if(!currentUser)return;
+            const userRef=ref(db,'users/'+currentUser.uid);
+            const userSnap=await get(userRef);
+            if(!userSnap.exists())return;
+            let userData=userSnap.val();
+            let newBalance=userData.balance||0, balanceUpdated=false;
+            const processedRewards=new Set();
+            const processedDeductions=new Set();
+
+            for(const order of allOrders){
+                if(order.status==='تم التسليم' && !order.rewardProcessed && order.totalIQD && !processedRewards.has(order.id)){
+                    processedRewards.add(order.id);
+                    const reward = Math.floor(order.totalIQD * 0.02);
+                    if(reward>0){
+                        newBalance+=reward; balanceUpdated=true;
+                        const expiry12Days=new Date(Date.now()+12*24*60*60*1000).toISOString();
+                        await push(ref(db,`users/${currentUser.uid}/balanceHistory`),{amount:reward,date:new Date().toISOString(),orderId:order.id,type:'reward',expiryDate:expiry12Days});
+                        await update(ref(db,`orders/${order.id}`),{rewardProcessed:true});
+                    }
+                }
+                if(order.status==='قيد التجهيز' && order.useBalance && order.usedBalanceAmount && !order.balanceDeducted && !processedDeductions.has(order.id)){
+                    processedDeductions.add(order.id);
+                    newBalance=Math.max(0,newBalance-order.usedBalanceAmount);
+                    balanceUpdated=true;
+                    const totalIQD = order.totalIQD || 0;
+                    const downPayment = order.downPayment || 0;
+                    const usedBalance = order.usedBalanceAmount || 0;
+                    const netFinal = floorToThousand(totalIQD - usedBalance - downPayment);
+                    await update(ref(db,`orders/${order.id}`),{balanceDeducted:true, netFinal:netFinal});
+                    await push(ref(db,`users/${currentUser.uid}/balanceHistory`),{amount:-order.usedBalanceAmount,date:new Date().toISOString(),orderId:order.id,type:'deduct',description:'خصم رصيد - قيد التجهيز'});
+                }
+            }
+
+            if(balanceUpdated){
+                const expiry=balanceUpdated?new Date(Date.now()+12*24*60*60*1000).toISOString():userData.balanceExpiry;
+                await update(userRef,{balance:newBalance,balanceExpiry:expiry});
+                currentUserData={...currentUserData,balance:newBalance,balanceExpiry:expiry};
+                updateBalanceDisplay();
+            }
+        }
+
+        function renderOrdersList(){
+            const c=document.getElementById('ordersList');
+            if(!allOrders.length){c.innerHTML='<div style="text-align:center;color:var(--gray-400);padding:30px;">لا توجد طلبات</div>';return;}
+            c.innerHTML=allOrders.map(o=>`<div class="order-card" data-id="${o.id}"><div style="display:flex;justify-content:space-between;"><strong>${o.orderNumber||o.id}</strong><span class="badge ${getBadge(o.status)}">${o.status}</span></div><div style="font-size:12px;color:var(--gray-500);">${formatDate(o.createdAt)} ${o.totalIQD?'| '+(o.totalIQD).toLocaleString()+' د.ع':''}</div>${o.status==='بانتظار الدفع'?`<div style="margin-top:8px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm pay-btn" data-id="${o.id}">💳 ادفع</button><button class="btn btn-danger btn-sm cancel-btn" data-id="${o.id}">❌ إلغاء</button></div>`:''}</div>`).join('');
+            c.onclick=(e)=>{const card=e.target.closest('.order-card');if(!card)return;if(e.target.closest('.pay-btn')){e.stopPropagation();openPaymentModal(card.dataset.id);}else if(e.target.closest('.cancel-btn')){e.stopPropagation();cancelOrder(card.dataset.id);}else openOrderDetail(card.dataset.id);};
+        }
+
+        function renderRecentOrders(){
+            const c=document.getElementById('recentOrdersContainer');
+            const recent=allOrders.slice(0,5);
+            c.innerHTML=recent.length?recent.map(o=>`<div class="order-card" data-id="${o.id}" style="padding:12px;"><span>${o.orderNumber}</span> <span class="badge ${getBadge(o.status)}">${o.status}</span></div>`).join(''):'<div style="text-align:center;color:var(--gray-400);">لا توجد طلبات</div>';
+            c.onclick=(e)=>{const card=e.target.closest('.order-card');if(card)openOrderDetail(card.dataset.id);};
+        }
+
+        function updateStats(){
+            document.getElementById('statTotal').textContent=allOrders.length;
+            document.getElementById('statPending').textContent=allOrders.filter(o=>o.status==='قيد المراجعة').length;
+            document.getElementById('statShipping').textContent=allOrders.filter(o=>o.status?.includes('شحن')).length;
+            document.getElementById('statDelivered').textContent=allOrders.filter(o=>o.status==='تم التسليم').length;
+        }
+
+        // ✅ تفاصيل الطلب بالترتيب المطلوب
+        function openOrderDetail(orderId){
+            const order=allOrders.find(o=>o.id===orderId);if(!order)return;
+            const priceBeforeDiscount = order.priceUSD ? Math.floor(order.priceUSD * 1200) : 0;
+            const deliveryFee = order.deliveryFee || 0;
+            const usedBalance = order.usedBalanceAmount || 0;
+            const downPayment = order.downPayment || 0;
+            const totalIQD = order.totalIQD || 0;
+            const netFinal = order.netFinal;
+            let dupHtml='';
+            if(order.hasDuplicates&&order.duplicateProducts?.length){dupHtml='<div style="background:var(--gold-light);padding:12px;border-radius:8px;margin:10px 0;"><strong>📋 منتجات مكررة:</strong><br>';order.duplicateProducts.forEach((d,i)=>dupHtml+=`${i+1}. <a href="${d.link}" target="_blank">${d.link}</a> (العدد: ${d.quantity})<br>`);dupHtml+='</div>';}
+            document.getElementById('orderDetailContent').innerHTML=`
+                <div class="detail-row"><span>🔖 الطلب</span><span>${order.orderNumber||order.id}</span></div>
+                <div class="detail-row"><span>📊 الحالة</span><span class="badge ${getBadge(order.status)}">${order.status}</span></div>
+                <div class="detail-row"><span>📅 التاريخ</span><span>${formatDate(order.createdAt)}</span></div>
+                <div class="detail-row"><span>🔗 السلة</span><span><a href="${order.cartLink}" target="_blank">${order.cartLink||'—'}</a></span></div>
+                ${dupHtml}
+                <div class="detail-row"><span>💵 السعر بالدولار</span><span>${order.priceUSD||'—'} $</span></div>
+                <div class="detail-row"><span style="color:var(--gold);">📊 السعر قبل الخصم</span><span style="color:var(--gold);">${priceBeforeDiscount.toLocaleString()} د.ع</span></div>
+                <div class="detail-row"><span>🚚 تكلفة التوصيل</span><span>${deliveryFee===0?'🎁 مجاني':'+'+deliveryFee.toLocaleString()+' د.ع'}</span></div>
+                <div class="detail-row"><span>💰 رصيدك المتاح</span><span style="color:var(--sky-dark);">- ${usedBalance.toLocaleString()} د.ع</span></div>
+                <div class="detail-row"><span>🔐 العربون</span><span>- ${downPayment.toLocaleString()} د.ع</span></div>
+                <div class="detail-row"><span style="color:var(--success);font-weight:800;">💸 السعر بعد الخصم</span><span style="color:var(--success);font-weight:800;">${netFinal!=null?netFinal.toLocaleString()+' د.ع':'—'}</span></div>
+                <div class="detail-row"><span>💳 طريقة الدفع</span><span>${order.paymentMethod==='zaincash'?'📱 زين كاش':order.paymentMethod==='rafidain'?'🏦 الرافدين':'—'}</span></div>
+                ${order.paymentScreenshot?`<div style="margin-top:10px;"><strong>📸 صورة التحويل:</strong><br><img src="${order.paymentScreenshot}" style="max-width:100%; max-height:200px;"></div>`:''}
+                ${order.status==='بانتظار الدفع'?`<div style="margin-top:12px;display:flex;gap:8px;"><button class="btn btn-gold btn-sm" id="detailPayBtn">💳 ادفع</button><button class="btn btn-danger btn-sm" id="detailCancelBtn">❌ إلغاء</button></div>`:''}
+            `;
+            document.getElementById('orderDetailModal').style.display='flex';
+            const dpb=document.getElementById('detailPayBtn');if(dpb)dpb.onclick=()=>{document.getElementById('orderDetailModal').style.display='none';openPaymentModal(orderId);};
+            const dcb=document.getElementById('detailCancelBtn');if(dcb)dcb.onclick=()=>{document.getElementById('orderDetailModal').style.display='none';cancelOrder(orderId);};
+        }
         document.getElementById('closeOrderDetail').onclick=()=>document.getElementById('orderDetailModal').style.display='none';
+
         async function cancelOrder(orderId){if(confirm('إلغاء الطلب؟')){await update(ref(db,'orders/'+orderId),{status:'ملغي'});showToast('تم الإلغاء');}}
 
-        // Add Order
-        const addOrderModal=document.getElementById('addOrderModal'),addOrderForm=document.getElementById('addOrderForm'),cartLinkInput=document.getElementById('cartLink'),duplicateContainer=document.getElementById('duplicateProductsContainer'),dupFields=document.getElementById('dupFields'),addDupBtn=document.getElementById('addDupRow'),radioGroup=document.querySelector('#addOrderModal .radio-group');
-        document.getElementById('addOrderBtn').addEventListener('click',()=>{addOrderModal.style.display='flex';resetAddForm();});
-        document.getElementById('closeAddOrder').addEventListener('click',()=>addOrderModal.style.display='none');
-        addOrderModal.addEventListener('click',(e)=>{if(e.target===addOrderModal)addOrderModal.style.display='none';});
-        function resetAddForm(){addOrderForm.reset();duplicateContainer.style.display='none';dupFields.innerHTML='';addDuplicateRow();document.querySelector('input[name="hasDuplicates"][value="no"]').checked=true;document.querySelectorAll('#addOrderModal .radio-option').forEach(o=>o.classList.remove('selected'));document.querySelector('#addOrderModal .radio-option[data-val="no"]').classList.add('selected');}
-        function addDuplicateRow(){const row=document.createElement('div');row.style.cssText='display:flex; gap:8px; margin-bottom:8px;';row.innerHTML=`<input type="url" placeholder="رابط المنتج المكرر" class="dup-link" style="flex:2; padding:10px; border:1px solid var(--gray-200); border-radius:8px;"><input type="number" placeholder="العدد" class="dup-qty" value="1" min="1" style="width:70px; padding:10px; border:1px solid var(--gray-200); border-radius:8px;"><button type="button" class="btn btn-danger btn-sm remove-dup">🗑️</button>`;dupFields.appendChild(row);row.querySelector('.remove-dup').addEventListener('click',()=>row.remove());}
-        radioGroup.addEventListener('click',(e)=>{const opt=e.target.closest('.radio-option');if(!opt)return;document.querySelectorAll('#addOrderModal .radio-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');opt.querySelector('input').checked=true;duplicateContainer.style.display=opt.dataset.val==='yes'?'block':'none';});
-        addDupBtn.addEventListener('click',()=>addDuplicateRow());
-        addOrderForm.addEventListener('submit',async(e)=>{e.preventDefault();const cartLink=cartLinkInput.value.trim();if(!cartLink){showToast('أدخل رابط السلة','error');return;}const hasDup=document.querySelector('input[name="hasDuplicates"]:checked')?.value==='yes';const dups=[];if(hasDup){dupFields.querySelectorAll('div').forEach(row=>{const link=row.querySelector('.dup-link')?.value?.trim();const qty=parseInt(row.querySelector('.dup-qty')?.value)||1;if(link)dups.push({link,quantity:qty});});}const orderNumber='VND-'+Math.random().toString(36).substring(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-3).toUpperCase();const orderData={orderNumber,userId:currentUser.uid,userEmail:currentUser.email,cartLink,hasDuplicates:hasDup,duplicateProducts:dups,status:'قيد المراجعة',createdAt:new Date().toISOString()};try{await set(ref(db,'orders/'+orderNumber),orderData);addOrderModal.style.display='none';resetAddForm();showToast('✅ تم إرسال الطلب '+orderNumber,'success');}catch(error){showToast('⚠️ فشل في إرسال الطلب','error');}});
+        // ADD ORDER (دون خصم الرصيد)
+        const addOrderModal=document.getElementById('addOrderModal');
+        document.getElementById('addOrderBtn').onclick=()=>{addOrderModal.style.display='flex';resetAddForm();};
+        document.getElementById('closeAddOrder').onclick=()=>addOrderModal.style.display='none';
+        addOrderModal.onclick=(e)=>{if(e.target===addOrderModal)addOrderModal.style.display='none';};
+        function resetAddForm(){
+            document.getElementById('addOrderForm').reset();
+            document.getElementById('duplicateProductsContainer').style.display='none';
+            document.getElementById('dupFields').innerHTML='';
+            addDuplicateRow();
+            document.querySelector('input[name="hasDuplicates"][value="no"]').checked=true;
+            document.querySelectorAll('#addOrderModal .radio-option').forEach(o=>o.classList.remove('selected'));
+            document.querySelector('#addOrderModal .radio-option[data-val="no"]').classList.add('selected');
+            updateBalanceDisplay();
+        }
+        function addDuplicateRow(){
+            const row=document.createElement('div');row.style.cssText='display:flex;gap:8px;margin-bottom:8px;';
+            row.innerHTML=`<input type="url" placeholder="رابط المنتج" class="dup-link" style="flex:2;padding:10px;border:1px solid var(--gray-200);border-radius:8px;"><input type="number" placeholder="العدد" class="dup-qty" value="1" min="1" style="width:70px;padding:10px;border:1px solid var(--gray-200);border-radius:8px;"><button type="button" class="btn btn-danger btn-sm remove-dup">🗑️</button>`;
+            document.getElementById('dupFields').appendChild(row);
+            row.querySelector('.remove-dup').onclick=()=>row.remove();
+        }
+        document.querySelector('#addOrderModal .radio-group').onclick=(e)=>{const opt=e.target.closest('.radio-option');if(!opt)return;document.querySelectorAll('#addOrderModal .radio-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');opt.querySelector('input').checked=true;document.getElementById('duplicateProductsContainer').style.display=opt.dataset.val==='yes'?'block':'none';};
+        document.getElementById('addDupRow').onclick=addDuplicateRow;
+        document.getElementById('addOrderForm').onsubmit=async(e)=>{
+            e.preventDefault();
+            const cartLink=document.getElementById('cartLink').value.trim();
+            if(!cartLink){showToast('أدخل رابط السلة','error');return;}
+            const hasDup=document.querySelector('input[name="hasDuplicates"]:checked')?.value==='yes';
+            const dups=[];
+            if(hasDup){document.querySelectorAll('#dupFields > div').forEach(row=>{const link=row.querySelector('.dup-link')?.value?.trim();const qty=parseInt(row.querySelector('.dup-qty')?.value)||1;if(link)dups.push({link,quantity:qty});});}
+            const orderNumber='VND-'+Math.random().toString(36).substring(2,8).toUpperCase()+'-'+Date.now().toString(36).slice(-3).toUpperCase();
+            const orderData={orderNumber,userId:currentUser.uid,userEmail:currentUser.email,cartLink,hasDuplicates:hasDup,duplicateProducts:dups,status:'قيد المراجعة',createdAt:new Date().toISOString()};
+            if(currentUserData.balance>0){
+                orderData.useBalance=true;
+                orderData.usedBalanceAmount=currentUserData.balance;
+            }
+            await set(ref(db,'orders/'+orderNumber),orderData);
+            addOrderModal.style.display='none';resetAddForm();showToast('✅ تم إرسال الطلب '+orderNumber,'success');
+        };
 
-        // Payment
-        function openPaymentModal(orderId){currentPaymentOrderId=orderId;const order=allOrders.find(o=>o.id===orderId);if(!order)return;document.getElementById('paymentDetails').innerHTML=`<div class="highlight-box"><p><strong>🔖 ${order.orderNumber}</strong></p><p>💵 السعر: ${order.priceUSD||'—'} $</p><p>💰 الإجمالي: ${formatIQD(order.totalIQD)}</p><p>🔐 العربون: ${formatIQD(order.downPayment)}</p></div>`;document.getElementById('paymentModal').style.display='flex';resetPaymentForm();}
-        function resetPaymentForm(){document.getElementById('payMethodGroup').innerHTML=`<label class="radio-option" data-val="zaincash" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px solid var(--gray-200);">📱 زين كاش</label><label class="radio-option" data-val="rafidain" style="flex:1; padding:12px; background:var(--gray-50); border-radius:8px; text-align:center; cursor:pointer; border:2px solid var(--gray-200);">🏦 الرافدين</label>`;document.getElementById('payInstructions').style.display='none';document.getElementById('fileUploadSection').style.display='none';document.getElementById('previewImage').style.display='none';document.getElementById('paymentScreenshot').value='';uploadedImageUrl=null;document.getElementById('confirmPaymentBtn').disabled=true;document.getElementById('uploadProgress').style.display='none';}
+        // PAYMENT
+        function openPaymentModal(orderId){currentPaymentOrderId=orderId;const order=allOrders.find(o=>o.id===orderId);if(!order)return;let details=`<p><strong>🔖 ${order.orderNumber}</strong></p><p>💰 الإجمالي: ${(order.totalIQD||0).toLocaleString()} د.ع</p><p>🔐 العربون: ${(order.downPayment||0).toLocaleString()} د.ع</p>`;if(order.useBalance){details+=`<p style="color:var(--sky-dark);">💳 سيُخصم رصيدك: ${(order.usedBalanceAmount||0).toLocaleString()} د.ع عند التجهيز</p>`;}if(order.netFinal!=null){details+=`<p style="color:var(--success);font-weight:800;">💸 الصافي النهائي: ${order.netFinal.toLocaleString()} د.ع</p>`;}document.getElementById('paymentDetails').innerHTML=`<div style="background:var(--gold-light);padding:14px;border-radius:8px;margin:10px 0;">${details}</div>`;document.getElementById('paymentModal').style.display='flex';resetPaymentForm();}
+        function resetPaymentForm(){document.getElementById('payMethodGroup').innerHTML=`<label class="radio-option" data-val="zaincash" style="flex:1;padding:12px;background:var(--gray-50);border-radius:8px;cursor:pointer;">📱 زين كاش</label><label class="radio-option" data-val="rafidain" style="flex:1;padding:12px;background:var(--gray-50);border-radius:8px;cursor:pointer;">🏦 الرافدين</label>`;document.getElementById('payInstructions').style.display='none';document.getElementById('fileUploadSection').style.display='none';document.getElementById('confirmPaymentBtn').disabled=true;uploadedImageUrl=null;document.getElementById('uploadProgress').style.display='none';}
         document.getElementById('closePayment').onclick=()=>document.getElementById('paymentModal').style.display='none';
-        document.getElementById('payMethodGroup').addEventListener('click',(e)=>{const opt=e.target.closest('.radio-option');if(!opt)return;document.querySelectorAll('#payMethodGroup .radio-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');document.getElementById('payInstructions').style.display='block';document.getElementById('fileUploadSection').style.display='block';document.getElementById('payInstructions').innerHTML=opt.dataset.val==='zaincash'?'📱 زين كاش: 07821426607':'🏦 الرافدين: 7533677139';document.getElementById('confirmPaymentBtn').disabled=true;});
-        const fileInput=document.getElementById('paymentScreenshot');
-        fileInput.addEventListener('change',async function(e){const file=this.files[0];if(!file)return;const progressDiv=document.getElementById('uploadProgress'),progressFill=document.getElementById('progressFill'),progressText=document.getElementById('progressText'),previewImg=document.getElementById('previewImage'),confirmBtn=document.getElementById('confirmPaymentBtn');progressDiv.style.display='block';previewImg.style.display='none';confirmBtn.disabled=true;progressFill.style.width='0%';progressText.textContent='جاري ضغط الصورة...';try{const compressed=await compressImage(file);progressFill.style.width='30%';progressText.textContent='جاري رفع الصورة...';uploadedImageUrl=await uploadToCloudinaryWithProgress(compressed,(percent)=>{progressFill.style.width=(30+percent*0.7)+'%';progressText.textContent=`جاري الرفع... ${Math.round(percent)}%`;});progressFill.style.width='100%';progressText.textContent='✅ تم رفع الصورة بنجاح';const previewUrl=URL.createObjectURL(compressed);previewImg.src=previewUrl;previewImg.style.display='block';confirmBtn.disabled=false;showToast('✅ تم رفع الصورة بنجاح','success');setTimeout(()=>{progressDiv.style.display='none';},1500);}catch(error){progressDiv.style.display='none';showToast('⚠️ فشل رفع الصورة','error');}this.value='';});
-        document.getElementById('confirmPaymentBtn').onclick=async()=>{if(!uploadedImageUrl){showToast('ارفع صورة التحويل','error');return;}const method=document.querySelector('#payMethodGroup .radio-option.selected')?.dataset.val;if(!method){showToast('اختر طريقة الدفع','error');return;}await update(ref(db,'orders/'+currentPaymentOrderId),{paymentMethod:method,paymentScreenshot:uploadedImageUrl,status:'قيد التدقيق',paidAt:new Date().toISOString()});document.getElementById('paymentModal').style.display='none';showToast('✅ تم إرسال إثبات الدفع','success');};
-        function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('فشل قراءة الملف'));reader.onload=(ev)=>{const img=new Image();img.onerror=()=>reject(new Error('فشل تحميل الصورة'));img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;const MAX_DIM=1200;if(w>MAX_DIM||h>MAX_DIM){const r=Math.min(MAX_DIM/w,MAX_DIM/h);w=Math.round(w*r);h=Math.round(h*r);}canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);const tryQuality=(q)=>{canvas.toBlob((blob)=>{if(!blob){if(q>0.1)tryQuality(q-0.1);else reject(new Error('فشل ضغط الصورة'));return;}if(blob.size>500*1024&&q>0.1)tryQuality(q-0.1);else resolve(blob);},'image/jpeg',q);};tryQuality(0.8);};img.src=ev.target.result;};reader.readAsDataURL(file);});}
-        function uploadToCloudinaryWithProgress(blob,onProgress){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST','https://api.cloudinary.com/v1_1/fl3npkvv/image/upload');xhr.upload.addEventListener('progress',(e)=>{if(e.lengthComputable){const percent=(e.loaded/e.total)*100;onProgress(percent);}});xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){try{const data=JSON.parse(xhr.responseText);if(data.secure_url)resolve(data.secure_url);else reject(new Error(data.error?.message||'فشل الرفع'));}catch(e){reject(new Error('استجابة غير صالحة'));}}else reject(new Error('فشل الاتصال بالخادم'));};xhr.onerror=()=>reject(new Error('فشل الشبكة'));const fd=new FormData();fd.append('file',blob,'payment_'+Date.now()+'.jpg');fd.append('upload_preset','Postion');fd.append('cloud_name','fl3npkvv');xhr.send(fd);});}
+        document.getElementById('payMethodGroup').onclick=(e)=>{const opt=e.target.closest('.radio-option');if(!opt)return;document.querySelectorAll('#payMethodGroup .radio-option').forEach(o=>o.classList.remove('selected'));opt.classList.add('selected');document.getElementById('payInstructions').style.display='block';document.getElementById('fileUploadSection').style.display='block';document.getElementById('payInstructions').innerHTML=opt.dataset.val==='zaincash'?'📱 زين كاش: 07821426607':'🏦 الرافدين: 7533677139';};
+        document.getElementById('paymentScreenshot').onchange=async function(){const file=this.files[0];if(!file)return;document.getElementById('uploadProgress').style.display='block';document.getElementById('progressFill').style.width='0%';document.getElementById('progressText').textContent='جاري الضغط...';try{const compressed=await compressImage(file);document.getElementById('progressFill').style.width='30%';document.getElementById('progressText').textContent='جاري الرفع...';uploadedImageUrl=await uploadToCloudinaryWithProgress(compressed,(p)=>{document.getElementById('progressFill').style.width=(30+p*0.7)+'%';document.getElementById('progressText').textContent=`جاري الرفع... ${Math.round(p)}%`;});document.getElementById('progressFill').style.width='100%';document.getElementById('progressText').textContent='✅ تم الرفع';document.getElementById('confirmPaymentBtn').disabled=false;showToast('✅ تم رفع الصورة','success');setTimeout(()=>{document.getElementById('uploadProgress').style.display='none';},1500);}catch(error){document.getElementById('uploadProgress').style.display='none';showToast('⚠️ فشل الرفع','error');}this.value='';};
+        document.getElementById('confirmPaymentBtn').onclick=async()=>{if(!uploadedImageUrl){showToast('ارفع صورة','error');return;}const method=document.querySelector('#payMethodGroup .radio-option.selected')?.dataset.val;if(!method){showToast('اختر طريقة الدفع','error');return;}await update(ref(db,'orders/'+currentPaymentOrderId),{paymentMethod:method,paymentScreenshot:uploadedImageUrl,status:'قيد التدقيق',paidAt:new Date().toISOString()});document.getElementById('paymentModal').style.display='none';showToast('✅ تم إرسال إثبات الدفع','success');};
+
+        function compressImage(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=()=>reject(new Error('فشل'));reader.onload=(ev)=>{const img=new Image();img.onerror=()=>reject(new Error('فشل'));img.onload=()=>{const canvas=document.createElement('canvas');let w=img.width,h=img.height;if(w>1200||h>1200){const r=Math.min(1200/w,1200/h);w=Math.round(w*r);h=Math.round(h*r);}canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(img,0,0,w,h);const t=(q)=>{canvas.toBlob((b)=>{if(!b){if(q>0.1)t(q-0.1);else reject(new Error('فشل'));return;}if(b.size>500*1024&&q>0.1)t(q-0.1);else resolve(b);},'image/jpeg',q);};t(0.8);};img.src=ev.target.result;};reader.readAsDataURL(file);});}
+        function uploadToCloudinaryWithProgress(blob,onProgress){return new Promise((resolve,reject)=>{const xhr=new XMLHttpRequest();xhr.open('POST','https://api.cloudinary.com/v1_1/fl3npkvv/image/upload');xhr.upload.addEventListener('progress',(e)=>{if(e.lengthComputable)onProgress((e.loaded/e.total)*100);});xhr.onload=()=>{if(xhr.status>=200&&xhr.status<300){const d=JSON.parse(xhr.responseText);if(d.secure_url)resolve(d.secure_url);else reject(new Error(d.error?.message||'فشل'));}else reject(new Error('فشل'));};xhr.onerror=()=>reject(new Error('شبكة'));const fd=new FormData();fd.append('file',blob,'p.jpg');fd.append('upload_preset','Postion');fd.append('cloud_name','fl3npkvv');xhr.send(fd);});}
+
+        async function renderBalanceHistory(){
+            const c=document.getElementById('balanceHistoryContainer');
+            if(!currentUser)return;
+            const snap=await get(ref(db,`users/${currentUser.uid}/balanceHistory`));
+            const h=[];if(snap.exists())Object.entries(snap.val()).forEach(([k,v])=>h.push({id:k,...v}));
+            h.sort((a,b)=>new Date(b.date)-new Date(a.date));
+            c.innerHTML=h.length?h.map(x=>`<div class="detail-row"><span>${formatDate(x.date)}</span><span style="color:${x.amount>0?'var(--gold)':'var(--danger)'};">${x.amount>0?'+':''}${x.amount.toLocaleString()} د.ع</span></div>`).join(''):'<div style="text-align:center;color:var(--gray-400);">لا توجد عمليات</div>';
+        }
 
         if(!localStorage.getItem('vndr_session'))document.getElementById('authScreen').classList.remove('hidden');
         else document.getElementById('appScreen').classList.add('active');
