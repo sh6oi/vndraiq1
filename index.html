@@ -573,7 +573,6 @@
         .radio-option input {
             display: none;
         }
-        /* New style for price calculator */
         #priceCalcResult {
             background: var(--gold-light);
             padding: 12px;
@@ -594,7 +593,7 @@
     </style>
 </head>
 <body>
-    <!-- AUTH SCREEN (تسجيل الدخول فقط) -->
+    <!-- AUTH SCREEN -->
     <div id="authScreen">
         <div class="auth-container">
             <div class="auth-logo">
@@ -645,12 +644,9 @@
                         </div>
                     </div>
                     <div class="step"><div class="step-number">3</div><div class="step-text">تسجيل الخروج من جميع الحسابات وذلك للاعتماد على خصومات الموقع وليس الخصومات الشخصية المختلفة من حساب الى اخر.</div></div>
-                    <div class="step"><div class="step-number">4</div><div class="step-text">إضافة المنتجات إلى سلة التسوق، ثم مشاركة رابط السلة ونسخه.
-العودة إلى موقعنا. ثم الضغط على "إضافة طلب جديد" و لصق رابط السلة في خانة الطلب".</div></div>
-                    <div class="step"><div class="step-number">5</div><div class="step-text">علما ان الشحن مجاني بدون تحميل وسعر الصرف
-1320 فقط و التوصيل مجاني لأول طلب والشحن سريع من 12-15 يوم"</div></div>
+                    <div class="step"><div class="step-number">4</div><div class="step-text">إضافة المنتجات إلى سلة التسوق، ثم مشاركة رابط السلة ونسخه. العودة إلى موقعنا. ثم الضغط على "إضافة طلب جديد" و لصق رابط السلة في خانة الطلب".</div></div>
+                    <div class="step"><div class="step-number">5</div><div class="step-text">علما ان الشحن مجاني بدون تحميل وسعر الصرف 1320 فقط و التوصيل مجاني لأول طلب والشحن سريع من 12-15 يوم"</div></div>
                 </div>
-                <!-- New button: Calculate Price -->
                 <button class="btn btn-outline" style="width:100%; padding:14px; margin-bottom:12px;" id="calcPriceBtn">🧮 حساب السعر</button>
                 <button class="btn btn-gold" style="width:100%; padding:16px; margin-bottom:16px;" id="addOrderBtn">➕ إضافة طلب جديد</button>
                 <div class="card">
@@ -690,7 +686,6 @@
     </div>
 
     <!-- MODALS -->
-    <!-- Add Order Modal -->
     <div id="addOrderModal" class="modal-overlay" style="display:none;">
         <div class="modal">
             <button class="close-modal" id="closeAddOrder" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button>
@@ -719,7 +714,6 @@
         </div>
     </div>
 
-    <!-- Order Detail Modal -->
     <div id="orderDetailModal" class="modal-overlay" style="display:none;">
         <div class="modal">
             <button class="close-modal" id="closeOrderDetail" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button>
@@ -728,7 +722,6 @@
         </div>
     </div>
 
-    <!-- Payment Modal -->
     <div id="paymentModal" class="modal-overlay" style="display:none;">
         <div class="modal">
             <button class="close-modal" id="closePayment" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button>
@@ -752,7 +745,6 @@
         </div>
     </div>
 
-    <!-- Price Calculator Modal -->
     <div id="calcPriceModal" class="modal-overlay" style="display:none;">
         <div class="modal">
             <button class="close-modal" id="closeCalcPrice" style="float:left; background:var(--gray-100); border:none; padding:8px 12px; border-radius:8px;">✕</button>
@@ -791,7 +783,6 @@
                     this.value = cleaned;
                 }
             });
-            // Also on blur to be safe
             inputElement.addEventListener('blur', function() {
                 const cleaned = extractUrl(this.value);
                 if (cleaned !== this.value) {
@@ -843,7 +834,7 @@
             return 100000;
         }
 
-        // AUTH - تسجيل الدخول مع فحص الحذف والحظر
+        // AUTH
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const em = document.getElementById('loginEmail').value.trim(),
@@ -1017,7 +1008,8 @@
         function openOrderDetail(orderId) {
             const order = allOrders.find(o => o.id === orderId);
             if (!order) return;
-            const priceBeforeDiscount = order.priceUSD ? Math.floor(order.priceUSD * 1320) : 0;
+            // Updated: Use floorToThousand to round the price before discount
+            const priceBeforeDiscount = order.priceUSD ? floorToThousand(Math.floor(order.priceUSD * 1320)) : 0;
             const deliveryFee = order.deliveryFee || 0;
             const downPayment = order.downPayment || 0;
             const netFinal = order.netFinal;
@@ -1085,12 +1077,10 @@
             row.innerHTML =
                 `<input type="url" placeholder="رابط المنتج" class="dup-link" style="flex:2;padding:10px;border:1px solid var(--gray-200);border-radius:8px;"><input type="number" placeholder="العدد" class="dup-qty" value="1" min="1" style="width:70px;padding:10px;border:1px solid var(--gray-200);border-radius:8px;"><button type="button" class="btn btn-danger btn-sm remove-dup">🗑️</button>`;
             document.getElementById('dupFields').appendChild(row);
-            // Apply link cleaner to the new dup-link
             const linkInput = row.querySelector('.dup-link');
             setupLinkCleaner(linkInput);
             row.querySelector('.remove-dup').onclick = () => row.remove();
         }
-        // Apply link cleaner to cartLink
         setupLinkCleaner(document.getElementById('cartLink'));
 
         document.querySelector('#addOrderModal .radio-group').onclick = (e) => {
@@ -1162,7 +1152,6 @@
                 return;
             }
             const iqd = Math.floor(usd * 1320);
-            // Use new down payment calculation
             const downPayment = calculateDownPayment(iqd);
             const iqdRounded = floorToThousand(iqd);
             const downRounded = floorToThousand(downPayment);
@@ -1180,7 +1169,6 @@
             currentPaymentOrderId = orderId;
             const order = allOrders.find(o => o.id === orderId);
             if (!order) return;
-            // Ensure downPayment is set; if not, compute from totalIQD
             let downPayment = order.downPayment;
             if (!downPayment && order.totalIQD) {
                 downPayment = calculateDownPayment(order.totalIQD);
@@ -1196,12 +1184,10 @@
         }
 
         function resetPaymentForm(downPayment) {
-            // Build payment options
             let html = `
                 <label class="radio-option" data-val="zaincash" style="flex:1;padding:12px;background:var(--gray-50);border-radius:8px;cursor:pointer;">📱 زين كاش</label>
                 <label class="radio-option" data-val="rafidain" style="flex:1;padding:12px;background:var(--gray-50);border-radius:8px;cursor:pointer;">🏦 الرافدين</label>
             `;
-            // Show Asiacell only if downPayment == 10000
             if (downPayment && downPayment === 10000) {
                 html += `
                     <label class="radio-option" data-val="asiacell" style="flex:1;padding:12px;background:var(--gray-50);border-radius:8px;cursor:pointer;">📱 رصيد اسياسيل</label>
@@ -1213,7 +1199,6 @@
             document.getElementById('confirmPaymentBtn').disabled = true;
             uploadedImageUrl = null;
             document.getElementById('uploadProgress').style.display = 'none';
-            // Reset selection
             document.querySelectorAll('#payMethodGroup .radio-option').forEach(o => o.classList.remove('selected'));
         }
         document.getElementById('closePayment').onclick = () => document.getElementById('paymentModal').style.display = 'none';
@@ -1234,7 +1219,6 @@
                 instruction = '📱 رصيد اسياسيل: يرجى رفع صورة كارت التعبئة';
             }
             document.getElementById('payInstructions').innerHTML = instruction;
-            // Update file upload label based on method
             const uploadArea = document.getElementById('fileUploadArea');
             if (method === 'asiacell') {
                 uploadArea.querySelector('p').textContent = 'اضغط لرفع صورة كارت التعبئة';
